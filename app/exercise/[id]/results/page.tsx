@@ -23,6 +23,13 @@ export default async function ResultsPage({ params }: ResultsPageProps) {
     redirect("/auth/login")
   }
 
+  // Get user profile to check role
+  const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single()
+
+  if (!profile) {
+    redirect("/auth/login")
+  }
+
   // Get exercise details
   const { data: exercise, error: exerciseError } = await supabase
     .from("exercises")
@@ -40,11 +47,13 @@ export default async function ResultsPage({ params }: ResultsPageProps) {
     .single()
 
   if (exerciseError || !exercise) {
-    redirect("/dashboard/student")
+    redirect("/dashboard/student") // Redirect to student dashboard if exercise not found or error
   }
 
-  // Verify the exercise belongs to the current user
-  if (exercise.student_id !== user.id) {
+  // Authorization check:
+  // Students can only view their own exercises.
+  // Teachers can view any exercise.
+  if (profile.role === "student" && exercise.student_id !== user.id) {
     redirect("/dashboard/student")
   }
 
@@ -64,7 +73,13 @@ export default async function ResultsPage({ params }: ResultsPageProps) {
     .eq("exercise_id", id)
 
   if (!attempts || attempts.length === 0) {
-    redirect(`/exercise/${id}`)
+    // If no attempts, it means the exercise might not have been started or completed properly
+    // Redirect to the exercise interface if it's still in progress, otherwise to dashboard
+    if (exercise.status === "in_progress") {
+      redirect(`/exercise/${id}`)
+    } else {
+      redirect("/dashboard/student")
+    }
   }
 
   // Get all grammatical cases
@@ -132,16 +147,18 @@ export default async function ResultsPage({ params }: ResultsPageProps) {
               <p className="text-sm text-muted-foreground">{exercise.chapters.title}</p>
             </div>
             <div className="flex items-center gap-2">
-              <Button asChild variant="outline">
-                <Link href={`/exercise/setup?chapterId=${exercise.chapter_id}`}>
-                  <RotateCcw className="h-4 w-4 mr-2" />
-                  Try Again
-                </Link>
-              </Button>
+              {profile.role === "student" && (
+                <Button asChild variant="outline">
+                  <Link href={`/exercise/setup?chapterId=${exercise.chapter_id}`}>
+                    <RotateCcw className="h-4 w-4 mr-2" />
+                    Try Again
+                  </Link>
+                </Button>
+              )}
               <Button asChild>
-                <Link href="/dashboard/student">
+                <Link href={profile.role === "teacher" ? `/dashboard/teacher/students/${exercise.student_id}` : "/dashboard/student"}>
                   <ArrowLeft className="h-4 w-4 mr-2" />
-                  Dashboard
+                  {profile.role === "teacher" ? "Back to Student" : "Dashboard"}
                 </Link>
               </Button>
             </div>

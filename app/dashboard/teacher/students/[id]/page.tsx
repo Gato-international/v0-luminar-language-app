@@ -195,20 +195,22 @@ export default async function StudentDetailPage({ params }: StudentDetailPagePro
             {exercises && exercises.length > 0 ? (
               <div className="space-y-3">
                 {exercises.slice(0, 10).map((exercise) => (
-                  <div key={exercise.id} className="flex items-center gap-3 p-3 rounded-lg border">
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium truncate">{exercise.chapters?.title}</p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <Badge variant="outline" className="text-xs">
-                          {exercise.exercise_type}
-                        </Badge>
-                        <Badge variant="outline" className="text-xs">
-                          {exercise.difficulty}
-                        </Badge>
+                  <Link key={exercise.id} href={`/exercise/${exercise.id}/results`}>
+                    <div className="flex items-center gap-3 p-3 rounded-lg border hover:bg-accent/50 transition-colors">
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium truncate">{exercise.chapters?.title}</p>
+                        <div className="flex items-center gap-2 mt-1">
+                          <Badge variant="outline" className="text-xs">
+                            {exercise.exercise_type}
+                          </Badge>
+                          <Badge variant="outline" className="text-xs">
+                            {exercise.difficulty}
+                          </Badge>
+                        </div>
                       </div>
+                      <Badge variant={exercise.status === "completed" ? "default" : "secondary"}>{exercise.status}</Badge>
                     </div>
-                    <Badge variant={exercise.status === "completed" ? "default" : "secondary"}>{exercise.status}</Badge>
-                  </div>
+                  </Link>
                 ))}
               </div>
             ) : (

@@ -5,6 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { ArrowLeft } from "lucide-react"
 import Link from "next/link"
+import { GrammaticalCaseDialog } from "@/components/teacher/grammatical-case-dialog"
+import { DeleteDialog } from "@/components/teacher/delete-dialog"
+import { deleteGrammaticalCase } from "@/app/actions/grammatical-cases"
 
 export default async function GrammaticalCasesPage() {
   const supabase = await createClient()
@@ -47,9 +50,12 @@ export default async function GrammaticalCasesPage() {
               Back to Content
             </Link>
           </Button>
-          <div>
-            <h1 className="text-2xl font-bold">Grammatical Cases</h1>
-            <p className="text-sm text-muted-foreground">View grammatical case types and their usage</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold">Grammatical Cases</h1>
+              <p className="text-sm text-muted-foreground">View and manage grammatical case types</p>
+            </div>
+            <GrammaticalCaseDialog />
           </div>
         </div>
       </header>
@@ -62,16 +68,22 @@ export default async function GrammaticalCasesPage() {
               return (
                 <Card key={grammaticalCase.id}>
                   <CardHeader>
-                    <div className="flex items-start gap-4">
-                      <div
-                        className="h-16 w-16 rounded-lg flex items-center justify-center text-white font-bold text-xl flex-shrink-0"
-                        style={{ backgroundColor: grammaticalCase.color }}
-                      >
-                        {grammaticalCase.abbreviation}
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1 flex items-start gap-4">
+                        <div
+                          className="h-16 w-16 rounded-lg flex items-center justify-center text-white font-bold text-xl flex-shrink-0"
+                          style={{ backgroundColor: grammaticalCase.color }}
+                        >
+                          {grammaticalCase.abbreviation}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <CardTitle className="text-xl mb-1">{grammaticalCase.name}</CardTitle>
+                          <p className="text-sm text-muted-foreground">{grammaticalCase.description}</p>
+                        </div>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <CardTitle className="text-xl mb-1">{grammaticalCase.name}</CardTitle>
-                        <p className="text-sm text-muted-foreground">{grammaticalCase.description}</p>
+                      <div className="flex items-center gap-2">
+                        <GrammaticalCaseDialog grammaticalCase={grammaticalCase} />
+                        <DeleteDialog id={grammaticalCase.id} type="grammatical case" onDelete={deleteGrammaticalCase} />
                       </div>
                     </div>
                   </CardHeader>
@@ -98,7 +110,8 @@ export default async function GrammaticalCasesPage() {
         ) : (
           <Card>
             <CardContent className="p-12 text-center">
-              <p className="text-muted-foreground">No grammatical cases found</p>
+              <p className="text-muted-foreground mb-4">No grammatical cases found</p>
+              <GrammaticalCaseDialog />
             </CardContent>
           </Card>
         )}

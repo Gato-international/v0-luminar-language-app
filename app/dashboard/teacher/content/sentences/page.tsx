@@ -1,8 +1,3 @@
-import { SelectItem } from "@/components/ui/select"
-import { SelectContent } from "@/components/ui/select"
-import { SelectValue } from "@/components/ui/select"
-import { SelectTrigger } from "@/components/ui/select"
-import { Select } from "@/components/ui/select"
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -13,6 +8,7 @@ import Link from "next/link"
 import { SentenceDialog } from "@/components/teacher/sentence-dialog"
 import { DeleteDialog } from "@/components/teacher/delete-dialog"
 import { deleteSentence } from "@/app/actions/sentences"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 export default async function SentencesPage() {
   const supabase = await createClient()
@@ -33,6 +29,8 @@ export default async function SentencesPage() {
 
   // Get all chapters for filter
   const { data: chapters } = await supabase.from("chapters").select("*").order("order_index")
+
+  const { data: grammaticalCases } = await supabase.from("grammatical_cases").select("*").order("name")
 
   // Get all sentences with chapter info
   const { data: sentences } = await supabase
@@ -73,7 +71,7 @@ export default async function SentencesPage() {
               <h1 className="text-2xl font-bold">Sentences</h1>
               <p className="text-sm text-muted-foreground">Manage practice sentences and annotations</p>
             </div>
-            <SentenceDialog chapters={chapters || []} />
+            <SentenceDialog chapters={chapters || []} grammaticalCases={grammaticalCases || []} />
           </div>
         </div>
       </header>
@@ -127,7 +125,11 @@ export default async function SentencesPage() {
                         <CardTitle className="text-lg font-normal">{sentence.text}</CardTitle>
                       </div>
                       <div className="flex items-center gap-2">
-                        <SentenceDialog sentence={sentence} chapters={chapters || []} />
+                        <SentenceDialog
+                          sentence={sentence}
+                          chapters={chapters || []}
+                          grammaticalCases={grammaticalCases || []}
+                        />
                         <DeleteDialog id={sentence.id} type="sentence" onDelete={deleteSentence} />
                       </div>
                     </div>
@@ -147,7 +149,7 @@ export default async function SentencesPage() {
           <Card>
             <CardContent className="p-12 text-center">
               <p className="text-muted-foreground mb-4">No sentences yet</p>
-              <SentenceDialog chapters={chapters || []} />
+              <SentenceDialog chapters={chapters || []} grammaticalCases={grammaticalCases || []} />
             </CardContent>
           </Card>
         )}

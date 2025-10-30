@@ -10,7 +10,6 @@ const _geistMono = Geist_Mono({ subsets: ["latin"] })
 export const metadata: Metadata = {
   title: "Luminar - Language Learning Platform",
   description: "Master Dutch grammar with intelligent exercises",
-  generator: "v0.app",
 }
 
 export default function RootLayout({

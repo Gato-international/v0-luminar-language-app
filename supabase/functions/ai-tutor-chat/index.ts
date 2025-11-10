@@ -17,6 +17,7 @@ serve(async (req) => {
       throw new Error("Missing messages in request body")
     }
 
+    // 1. Create a client with the user's auth token to get the authenticated user
     const supabase = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_ANON_KEY")!, {
       global: { headers: { Authorization: req.headers.get("Authorization")! } },
     })
@@ -28,11 +29,17 @@ serve(async (req) => {
       return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: corsHeaders })
     }
 
-    // Fetch student's performance data
-    const { data: progressData, error: progressError } = await supabase
+    // 2. Create an admin client to securely fetch data, bypassing RLS
+    const supabaseAdmin = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+    )
+
+    // 3. Fetch student's performance data using the admin client, but scoped to the authenticated user's ID
+    const { data: progressData, error: progressError } = await supabaseAdmin
       .from("student_progress")
       .select("*, chapters(title)")
-      .eq("student_id", user.id)
+      .eq("student_id", user.id) // Securely scope to the authenticated user
       .order("accuracy_percentage", { ascending: true }) // Get weakest areas first
       .limit(5)
 

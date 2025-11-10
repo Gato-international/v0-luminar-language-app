@@ -29,9 +29,10 @@ export function AIStudentChat({ studentId }: AIStudentChatProps) {
     // Initial message from AI
     const fetchInitialMessage = async () => {
       setIsLoading(true)
+      setError(null)
       const supabase = createClient()
       const { data, error } = await supabase.functions.invoke("chat-with-student-ai", {
-        body: { student_id: studentId, messages: [{ role: "user", content: "Hello" }] },
+        body: { student_id: studentId, messages: [] },
       })
       if (error) {
         setError(error.message)
@@ -114,7 +115,7 @@ export function AIStudentChat({ studentId }: AIStudentChatProps) {
               )}
             </div>
           ))}
-          {isLoading && (
+          {isLoading && messages.length === 0 && (
              <div className="flex items-start gap-3 justify-start">
                 <Avatar className="h-8 w-8">
                   <AvatarFallback className="bg-primary/10 text-primary relative">
@@ -123,7 +124,7 @@ export function AIStudentChat({ studentId }: AIStudentChatProps) {
                   </AvatarFallback>
                 </Avatar>
                 <div className="bg-muted rounded-lg px-4 py-2 text-sm">
-                    <span className="animate-pulse">Lumi is thinking...</span>
+                    <span className="animate-pulse">Lumi is preparing your summary...</span>
                 </div>
             </div>
           )}

@@ -70,21 +70,18 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     )
 
-    const { data: student, error: studentError } = await supabaseAdmin
-      .from("profiles")
-      .select("full_name")
-      .eq("id", student_id)
-      .single()
+    // Fetch student data in parallel for efficiency
+    const [studentResult, progressResult] = await Promise.all([
+      supabaseAdmin.from("profiles").select("full_name").eq("id", student_id).single(),
+      supabaseAdmin.from("student_progress").select("*, chapters(title)").eq("student_id", student_id),
+    ])
 
+    const { data: student, error: studentError } = studentResult
     if (studentError || !student) {
       throw new Error(`Could not retrieve student profile. ${studentError?.message || "Student not found."}`)
     }
 
-    const { data: progressData, error: progressError } = await supabaseAdmin
-      .from("student_progress")
-      .select("*, chapters(title)")
-      .eq("student_id", student_id)
-
+    const { data: progressData, error: progressError } = progressResult
     if (progressError) {
       throw new Error(`Could not retrieve student progress. ${progressError.message}`)
     }

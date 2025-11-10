@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { BookOpen, FileText, Sparkles } from "lucide-react"
+import { BookOpen, FileText, Sparkles, ArrowRight } from "lucide-react"
 import Link from "next/link"
 import { UserNav } from "@/components/student/user-nav"
 
@@ -49,37 +49,43 @@ export default async function StudentDashboardPage() {
         {/* Learning Path Cards */}
         <div className="grid md:grid-cols-2 gap-6">
           {/* Text Learning */}
-          <Link href="/dashboard/student/text-learning">
+          <Link href="/dashboard/student/text-learning" className="group">
             <Card className="hover:shadow-lg transition-shadow h-full flex flex-col">
               <CardHeader>
                 <div className="flex items-center gap-3 mb-2">
-                  <div className="h-12 w-12 rounded-lg bg-blue-500/10 flex items-center justify-center">
-                    <FileText className="h-6 w-6 text-blue-500" />
+                  <div className="h-12 w-12 rounded-lg bg-muted flex items-center justify-center">
+                    <FileText className="h-6 w-6 text-foreground" />
                   </div>
                   <CardTitle>Text Learning</CardTitle>
                 </div>
                 <CardDescription>Improve your grammar by analyzing and practicing with full sentences.</CardDescription>
               </CardHeader>
               <CardContent className="mt-auto">
-                <p className="text-sm font-semibold text-blue-500">Go to Text Learning →</p>
+                <div className="flex items-center text-sm font-semibold text-foreground">
+                  Go to Text Learning
+                  <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                </div>
               </CardContent>
             </Card>
           </Link>
 
           {/* Word Learning */}
-          <Link href="/dashboard/student/word-learning">
+          <Link href="/dashboard/student/word-learning" className="group">
             <Card className="hover:shadow-lg transition-shadow h-full flex flex-col">
               <CardHeader>
                 <div className="flex items-center gap-3 mb-2">
-                  <div className="h-12 w-12 rounded-lg bg-green-500/10 flex items-center justify-center">
-                    <Sparkles className="h-6 w-6 text-green-500" />
+                  <div className="h-12 w-12 rounded-lg bg-muted flex items-center justify-center">
+                    <Sparkles className="h-6 w-6 text-foreground" />
                   </div>
                   <CardTitle>Word Learning</CardTitle>
                 </div>
                 <CardDescription>Expand your vocabulary with flashcards and interactive word exercises.</CardDescription>
               </CardHeader>
               <CardContent className="mt-auto">
-                <p className="text-sm font-semibold text-green-500">Go to Word Learning →</p>
+                <div className="flex items-center text-sm font-semibold text-foreground">
+                  Go to Word Learning
+                  <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                </div>
               </CardContent>
             </Card>
           </Link>

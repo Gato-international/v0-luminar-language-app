@@ -20,7 +20,10 @@ export default function HomePage() {
           </div>
 
           <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-balance">
-            Master Grammar with <span className="text-primary">Luminar</span>
+            Master Grammar
+            <span className="block">
+              with <span className="text-primary">Luminar</span>
+            </span>
           </h1>
 
           <div className="flex flex-col sm:flex-row gap-4 mt-4">

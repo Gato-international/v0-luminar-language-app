@@ -203,7 +203,7 @@ export function ExerciseInterface({
   )
 
   // Check if all questions are answered
-  const totalWordsToIdentify = wordsToIdentify.length * sentences.length
+  const totalWordsToIdentify = annotations.length
   const isAllComplete = answers.length === totalWordsToIdentify
 
   const progressPercentage = totalWordsToIdentify > 0 ? (answers.length / totalWordsToIdentify) * 100 : 0

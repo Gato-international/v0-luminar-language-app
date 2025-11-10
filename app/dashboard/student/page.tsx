@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { BookOpen, FileText, Sparkles, ArrowRight } from "lucide-react"
+import { BookOpen, FileText, Sparkles, ArrowRight, BrainCircuit } from "lucide-react"
 import Link from "next/link"
 import { UserNav } from "@/components/student/user-nav"
 
@@ -47,7 +47,7 @@ export default async function StudentDashboardPage() {
         </div>
 
         {/* Learning Path Cards */}
-        <div className="grid md:grid-cols-2 gap-6">
+        <div className="grid md:grid-cols-3 gap-6">
           {/* Text Learning */}
           <Link href="/dashboard/student/text-learning" className="group">
             <Card className="hover:shadow-lg transition-shadow h-full flex flex-col">
@@ -84,6 +84,27 @@ export default async function StudentDashboardPage() {
               <CardContent className="mt-auto">
                 <div className="flex items-center text-sm font-semibold text-foreground">
                   Go to Word Learning
+                  <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                </div>
+              </CardContent>
+            </Card>
+          </Link>
+
+          {/* AI Tutor */}
+          <Link href="/dashboard/student/ai-tutor" className="group">
+            <Card className="hover:shadow-lg transition-shadow h-full flex flex-col bg-primary/5 border-primary/20">
+              <CardHeader>
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="h-12 w-12 rounded-lg bg-muted flex items-center justify-center">
+                    <BrainCircuit className="h-6 w-6 text-primary" />
+                  </div>
+                  <CardTitle>AI Tutor</CardTitle>
+                </div>
+                <CardDescription>Ask questions and get personalized practice from your AI assistant, Lumi.</CardDescription>
+              </CardHeader>
+              <CardContent className="mt-auto">
+                <div className="flex items-center text-sm font-semibold text-primary">
+                  Chat with Lumi
                   <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </div>
               </CardContent>

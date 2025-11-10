@@ -1,5 +1,6 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,6 +20,12 @@ interface UserNavProps {
 }
 
 export function UserNav({ profile }: UserNavProps) {
+  const [isMounted, setIsMounted] = useState(false)
+
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
+
   const getInitials = (name: string | null) => {
     if (!name) return "?"
     const names = name.split(" ")
@@ -26,6 +33,16 @@ export function UserNav({ profile }: UserNavProps) {
       .map((n) => n[0])
       .join("")
       .toUpperCase()
+  }
+
+  if (!isMounted) {
+    return (
+      <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+        <Avatar className="h-10 w-10">
+          <AvatarFallback>{getInitials(profile.full_name)}</AvatarFallback>
+        </Avatar>
+      </Button>
+    )
   }
 
   return (

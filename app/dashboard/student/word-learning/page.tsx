@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button"
 import { ArrowLeft, BookOpen, Sparkles } from "lucide-react"
 import Link from "next/link"
 import { UserNav } from "@/components/student/user-nav"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent } from "@/components/ui/card"
+import { FlashcardSetPracticeCard } from "@/components/student/flashcard-set-practice-card"
 
 export default async function WordLearningPage() {
   const supabase = await createClient()
@@ -22,6 +23,18 @@ export default async function WordLearningPage() {
   if (!profile || profile.role !== "student") {
     redirect("/auth/login")
   }
+
+  // Get all flashcard sets with chapter info and flashcard counts
+  const { data: flashcardSets } = await supabase
+    .from("flashcard_sets")
+    .select(
+      `
+      *,
+      chapters (title),
+      flashcards (count)
+    `,
+    )
+    .order("created_at", { ascending: false })
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
@@ -46,21 +59,26 @@ export default async function WordLearningPage() {
               Back to Dashboard
             </Link>
           </Button>
+          <h2 className="text-3xl font-bold mb-2">Vocabulary Practice</h2>
+          <p className="text-muted-foreground">Choose a set to start practicing your vocabulary with flashcards.</p>
         </div>
-        <Card>
-          <CardHeader className="items-center text-center">
-            <div className="h-16 w-16 rounded-full bg-green-500/10 flex items-center justify-center mb-4">
-              <Sparkles className="h-8 w-8 text-green-500" />
-            </div>
-            <CardTitle className="text-2xl">Word Learning is Coming Soon!</CardTitle>
-          </CardHeader>
-          <CardContent className="text-center">
-            <p className="text-muted-foreground max-w-md mx-auto">
-              We're busy building an exciting new way for you to expand your vocabulary. Check back soon for
-              interactive flashcards and word exercises!
-            </p>
-          </CardContent>
-        </Card>
+
+        {flashcardSets && flashcardSets.length > 0 ? (
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {flashcardSets.map((set) => (
+              <FlashcardSetPracticeCard key={set.id} set={set} />
+            ))}
+          </div>
+        ) : (
+          <Card>
+            <CardContent className="p-12 text-center">
+              <div className="h-16 w-16 rounded-full bg-yellow-500/10 flex items-center justify-center mb-4 mx-auto">
+                <Sparkles className="h-8 w-8 text-yellow-500" />
+              </div>
+              <p className="text-muted-foreground">No flashcard sets have been created yet.</p>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   )

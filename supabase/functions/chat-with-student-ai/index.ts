@@ -123,7 +123,7 @@ serve(async (req) => {
       throw new Error("GEMINI_API_KEY is not set in Supabase secrets.")
     }
 
-    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${geminiApiKey}`
+    const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${geminiApiKey}`
 
     const geminiResponse = await fetch(geminiUrl, {
       method: "POST",

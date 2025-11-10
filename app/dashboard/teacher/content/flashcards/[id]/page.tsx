@@ -1,12 +1,11 @@
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { ArrowLeft, Plus } from "lucide-react"
+import { Card, CardContent } from "@/components/ui/card"
+import { ArrowLeft } from "lucide-react"
 import Link from "next/link"
 import { FlashcardDialog } from "@/components/teacher/flashcard-dialog"
-import { DeleteDialog } from "@/components/teacher/delete-dialog"
-import { deleteFlashcard } from "@/app/actions/flashcards"
+import { EditableFlashcardCard } from "@/components/teacher/editable-flashcard-card"
 
 interface FlashcardSetDetailPageProps {
   params: { id: string }
@@ -53,27 +52,7 @@ export default async function FlashcardSetDetailPage({ params }: FlashcardSetDet
         {flashcards && flashcards.length > 0 ? (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
             {flashcards.map((flashcard) => (
-              <Card key={flashcard.id} className="flex flex-col">
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <CardTitle className="text-lg">{flashcard.term}</CardTitle>
-                    <div className="flex items-center -mr-4">
-                      <FlashcardDialog setId={setId} flashcard={flashcard} />
-                      <DeleteDialog
-                        id={flashcard.id}
-                        type="flashcard"
-                        onDelete={async () => deleteFlashcard(flashcard.id, setId)}
-                      />
-                    </div>
-                  </div>
-                  <CardDescription>{flashcard.definition.replace(/;/g, ", ")}</CardDescription>
-                </CardHeader>
-                {flashcard.example_sentence && (
-                  <CardContent className="mt-auto">
-                    <p className="text-sm text-muted-foreground italic">&quot;{flashcard.example_sentence}&quot;</p>
-                  </CardContent>
-                )}
-              </Card>
+              <EditableFlashcardCard key={flashcard.id} flashcard={flashcard} setId={setId} />
             ))}
           </div>
         ) : (

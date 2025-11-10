@@ -35,7 +35,8 @@ export function AIStudentChat({ studentId }: AIStudentChatProps) {
         body: { student_id: studentId, messages: [] },
       })
       if (error) {
-        setError(error.message)
+        const detailedError = (error as any).error || error.message
+        setError(detailedError)
       } else {
         setMessages([{ role: "assistant", content: data.reply }])
       }
@@ -66,7 +67,8 @@ export function AIStudentChat({ studentId }: AIStudentChatProps) {
     })
 
     if (error) {
-      setError(error.message)
+      const detailedError = (error as any).error || error.message
+      setError(detailedError)
       setMessages((prev) => [...prev, { role: "assistant", content: "Sorry, I encountered an error." }])
     } else {
       setMessages((prev) => [...prev, { role: "assistant", content: data.reply }])

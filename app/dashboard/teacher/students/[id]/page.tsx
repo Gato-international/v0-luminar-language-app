@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { ArrowLeft, Award, Target, TrendingUp, BookOpen } from "lucide-react"
 import Link from "next/link"
+import { AIAnalysis } from "@/components/teacher/ai-analysis"
 
 interface StudentDetailPageProps {
   params: Promise<{ id: string }>
@@ -93,6 +94,11 @@ export default async function StudentDetailPage({ params }: StudentDetailPagePro
       </header>
 
       <div className="container mx-auto px-4 py-8">
+        {/* AI Analysis */}
+        <div className="mb-8">
+          <AIAnalysis studentId={student.id} />
+        </div>
+
         {/* Overall Stats */}
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <Card>

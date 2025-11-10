@@ -21,21 +21,36 @@ serve(async (req) => {
       global: { headers: { Authorization: req.headers.get("Authorization")! } },
     })
 
-    // Fetch student data
-    const { data: student } = await supabase.from("profiles").select("full_name").eq("id", student_id).single()
-    const { data: progressData } = await supabase.from("student_progress").select("*, chapters(title)").eq("student_id", student_id)
-    
-    const studentData = {
-      studentName: student.full_name,
-      progress: progressData?.map(p => ({
-        chapter: p.chapters.title,
-        accuracy: p.accuracy_percentage,
-        completedExercises: p.completed_exercises,
-        totalAttempts: p.total_attempts,
-      })),
+    // Fetch student data with proper error handling
+    const { data: student, error: studentError } = await supabase
+      .from("profiles")
+      .select("full_name")
+      .eq("id", student_id)
+      .single()
+
+    if (studentError || !student) {
+      throw new Error(`Could not retrieve student profile. ${studentError?.message || ""}`)
     }
 
-    const lastUserMessage = messages[messages.length - 1].content
+    const { data: progressData, error: progressError } = await supabase
+      .from("student_progress")
+      .select("*, chapters(title)")
+      .eq("student_id", student_id)
+
+    if (progressError) {
+      throw new Error(`Could not retrieve student progress. ${progressError.message}`)
+    }
+
+    const studentData = {
+      studentName: student.full_name || "Unnamed Student",
+      progress:
+        progressData?.map((p) => ({
+          chapter: p.chapters?.title || "Untitled Chapter",
+          accuracy: p.accuracy_percentage,
+          completedExercises: p.completed_exercises,
+          totalAttempts: p.total_attempts,
+        })) || [],
+    }
 
     // Construct the prompt for Gemini
     const prompt = `
@@ -50,7 +65,7 @@ serve(async (req) => {
 
       Here is the conversation history so far:
       ---
-      ${messages.map(m => `${m.role}: ${m.content}`).join('\n')}
+      ${messages.map((m) => `${m.role}: ${m.content}`).join("\n")}
       ---
 
       Based on all the above, provide a response to the teacher.

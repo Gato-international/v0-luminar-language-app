@@ -67,30 +67,32 @@ export default async function FlashcardsPage() {
             {flashcardSets.map((set) => {
               const flashcardCount = set.flashcards[0]?.count || 0
               return (
-                <Card key={set.id}>
-                  <CardHeader>
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          {set.chapters && <Badge variant="outline">{set.chapters.title}</Badge>}
-                          <CardTitle className="text-xl">{set.title}</CardTitle>
+                <Link key={set.id} href={`/dashboard/teacher/content/flashcards/${set.id}`} className="flex">
+                  <Card className="hover:shadow-lg transition-shadow w-full">
+                    <CardHeader>
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 mb-2">
+                            {set.chapters && <Badge variant="outline">{set.chapters.title}</Badge>}
+                            <CardTitle className="text-xl">{set.title}</CardTitle>
+                          </div>
+                          <p className="text-sm text-muted-foreground">{set.description || "No description"}</p>
                         </div>
-                        <p className="text-sm text-muted-foreground">{set.description || "No description"}</p>
+                        <div className="flex items-center gap-2 -mr-4">
+                          <FlashcardSetDialog set={set} chapters={chapters || []} />
+                          <DeleteDialog id={set.id} type="flashcard set" onDelete={deleteFlashcardSet} />
+                        </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <FlashcardSetDialog set={set} chapters={chapters || []} />
-                        <DeleteDialog id={set.id} type="flashcard set" onDelete={deleteFlashcardSet} />
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                        <span>{flashcardCount} flashcards</span>
+                        <span>•</span>
+                        <span>Created {new Date(set.created_at).toLocaleDateString()}</span>
                       </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                      <span>{flashcardCount} flashcards</span>
-                      <span>•</span>
-                      <span>Created {new Date(set.created_at).toLocaleDateString()}</span>
-                    </div>
-                  </CardContent>
-                </Card>
+                    </CardContent>
+                  </Card>
+                </Link>
               )
             })}
           </div>

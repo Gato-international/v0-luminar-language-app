@@ -1,0 +1,31 @@
+{
+  "greetings": [
+    {
+      "prompt": "Initial greeting",
+      "response": "Hi there! I'm Lumi, your personal AI tutor. I'm here to help you master grammar. Feel free to ask me any questions or ask for a practice sentence!"
+    }
+  ],
+  "grammar_topics": [
+    {
+      "topic": "Nominative Case",
+      "question": "What is the nominative case?",
+      "answer": "The nominative case is used for the subject of a sentence—the person or thing performing the action. For example, in 'De man leest het boek' (The man reads the book), 'De man' is in the nominative case because he is the one doing the reading."
+    },
+    {
+      "topic": "Accusative Case",
+      "question": "Explain the accusative case.",
+      "answer": "The accusative case is used for the direct object of a sentence—the person or thing that the action is done to. In the sentence 'De man leest het boek' (The man reads the book), 'het boek' is in the accusative case because it is the thing being read."
+    },
+    {
+      "topic": "De/Het Articles",
+      "question": "What's the difference between 'de' and 'het'?",
+      "answer": "'De' and 'het' both mean 'the'. 'De' is used for masculine and feminine nouns (e.g., 'de man' - the man, 'de vrouw' - the woman), while 'het' is used for neuter nouns (e.g., 'het boek' - the book). For plurals, you always use 'de' (e.g., 'de boeken' - the books)."
+    }
+  ],
+  "practice_requests": [
+    {
+      "prompt": "Give me a practice sentence.",
+      "response_template": "Of course! Here is a sentence: '{sentence}'. Can you tell me which word is in the {case_to_identify} case?"
+    }
+  ]
+}

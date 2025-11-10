@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { ArrowLeft, BookOpen, FileText, Tag } from "lucide-react"
+import { ArrowLeft, BookOpen, FileText, Tag, Sparkles } from "lucide-react"
 import Link from "next/link"
 
 export default async function ContentManagementPage() {
@@ -26,6 +26,7 @@ export default async function ContentManagementPage() {
   const { count: chaptersCount } = await supabase.from("chapters").select("*", { count: "exact", head: true })
   const { count: sentencesCount } = await supabase.from("sentences").select("*", { count: "exact", head: true })
   const { count: casesCount } = await supabase.from("grammatical_cases").select("*", { count: "exact", head: true })
+  const { count: flashcardSetsCount } = await supabase.from("flashcard_sets").select("*", { count: "exact", head: true })
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
@@ -43,7 +44,7 @@ export default async function ContentManagementPage() {
       </header>
 
       <div className="container mx-auto px-4 py-8">
-        <div className="grid md:grid-cols-3 gap-6">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
           {/* Chapters */}
           <Link href="/dashboard/teacher/content/chapters">
             <Card className="hover:shadow-lg transition-shadow h-full">
@@ -97,6 +98,25 @@ export default async function ContentManagementPage() {
               <CardContent>
                 <div className="text-3xl font-bold text-purple-500">{casesCount || 0}</div>
                 <p className="text-sm text-muted-foreground mt-1">Total cases</p>
+              </CardContent>
+            </Card>
+          </Link>
+
+          {/* Flashcards */}
+          <Link href="/dashboard/teacher/content/flashcards">
+            <Card className="hover:shadow-lg transition-shadow h-full">
+              <CardHeader>
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="h-12 w-12 rounded-lg bg-yellow-500/10 flex items-center justify-center">
+                    <Sparkles className="h-6 w-6 text-yellow-500" />
+                  </div>
+                  <CardTitle>Flashcards</CardTitle>
+                </div>
+                <CardDescription>Create and manage vocabulary sets</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold text-yellow-500">{flashcardSetsCount || 0}</div>
+                <p className="text-sm text-muted-foreground mt-1">Total sets</p>
               </CardContent>
             </Card>
           </Link>

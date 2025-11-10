@@ -12,8 +12,25 @@ serve(async (req) => {
   }
 
   try {
-    // 1. Get payload
-    const { student_id, messages } = await req.json()
+    const rawBody = await req.text()
+    if (!rawBody) {
+      return new Response(JSON.stringify({ error: "Request body is empty." }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      })
+    }
+
+    let body
+    try {
+      body = JSON.parse(rawBody)
+    } catch (e) {
+      return new Response(JSON.stringify({ error: `Invalid JSON in request body: ${e.message}` }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      })
+    }
+
+    const { student_id, messages } = body
     if (!student_id || !messages) {
       return new Response(JSON.stringify({ error: "Missing student_id or messages" }), {
         status: 400,
@@ -21,7 +38,6 @@ serve(async (req) => {
       })
     }
 
-    // 2. Create a client with the user's auth token to verify they are a teacher
     const supabase = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_ANON_KEY")!, {
       global: { headers: { Authorization: req.headers.get("Authorization")! } },
     })
@@ -49,13 +65,11 @@ serve(async (req) => {
       })
     }
 
-    // 3. Now that we've verified the user is a teacher, create an admin client to fetch data
     const supabaseAdmin = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     )
 
-    // 4. Fetch student data using the admin client
     const { data: student, error: studentError } = await supabaseAdmin
       .from("profiles")
       .select("full_name")
@@ -86,7 +100,6 @@ serve(async (req) => {
         })) || [],
     }
 
-    // Construct the prompt for Gemini
     const prompt = `
       You are 'Lumi', an expert language learning tutor AI assisting a teacher on the Luminar platform.
       Your tone should be professional, helpful, and encouraging.
@@ -99,7 +112,7 @@ serve(async (req) => {
 
       **Conversation History:**
       ---
-      ${messages.map((m) => `${m.role}: ${m.content}`).join("\n")}
+      ${messages.map((m: { role: string; content: string }) => `${m.role}: ${m.content}`).join("\n")}
       ---
 
       **Your Task:**

@@ -202,9 +202,17 @@ export function ExerciseInterface({
     currentSentenceAnswers.some((a) => a.wordIndex === w.wordIndex),
   )
 
-  // Check if all questions are answered
-  const totalWordsToIdentify = annotations.length
-  const isAllComplete = answers.length === totalWordsToIdentify
+  // Robustly calculate the total number of words that need to be identified across all sentences.
+  // This prevents issues from bad data (e.g., an annotation with an index outside the sentence's bounds).
+  const totalWordsToIdentify = sentences.reduce((count, sentence) => {
+    const words = sentence.text.trim().split(/\s+/)
+    const validAnnotationsForSentence = annotations.filter(
+      (a) => a.sentence_id === sentence.id && a.word_index < words.length,
+    ).length
+    return count + validAnnotationsForSentence
+  }, 0)
+
+  const isAllComplete = answers.length >= totalWordsToIdentify
 
   const progressPercentage = totalWordsToIdentify > 0 ? (answers.length / totalWordsToIdentify) * 100 : 0
 

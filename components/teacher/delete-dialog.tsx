@@ -18,7 +18,7 @@ import { useRouter } from "next/navigation"
 
 interface DeleteDialogProps {
   id: string
-  type: "chapter" | "sentence"
+  type: "chapter" | "sentence" | "grammatical case" | "flashcard set"
   onDelete: (id: string) => Promise<void>
 }
 

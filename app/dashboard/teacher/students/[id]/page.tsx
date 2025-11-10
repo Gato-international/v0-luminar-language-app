@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { ArrowLeft, Award, Target, TrendingUp, BookOpen } from "lucide-react"
 import Link from "next/link"
-import { AIAnalysis } from "@/components/teacher/ai-analysis"
+import { AIStudentChat } from "@/components/teacher/ai-student-chat"
 
 interface StudentDetailPageProps {
   params: Promise<{ id: string }>
@@ -93,137 +93,103 @@ export default async function StudentDetailPage({ params }: StudentDetailPagePro
         </div>
       </header>
 
-      <div className="container mx-auto px-4 py-8">
-        {/* AI Analysis */}
-        <div className="mb-8">
-          <AIAnalysis studentId={student.id} />
+      <div className="container mx-auto px-4 py-8 grid lg:grid-cols-2 gap-8">
+        {/* Left Column: AI Chat */}
+        <div className="lg:col-span-1">
+          <AIStudentChat studentId={student.id} />
         </div>
 
-        {/* Overall Stats */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        {/* Right Column: Stats and Progress */}
+        <div className="lg:col-span-1 space-y-8">
+          {/* Overall Stats */}
+          <div className="grid sm:grid-cols-2 gap-4">
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center gap-4">
+                  <div className="h-12 w-12 rounded-lg bg-blue-500/10 flex items-center justify-center flex-shrink-0">
+                    <Award className="h-6 w-6 text-blue-500" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-muted-foreground">Exercises</p>
+                    <p className="text-2xl font-bold">{totalCompleted}</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardContent className="p-6">
+                <div className="flex items-center gap-4">
+                  <div className="h-12 w-12 rounded-lg bg-green-500/10 flex items-center justify-center flex-shrink-0">
+                    <Target className="h-6 w-6 text-green-500" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-muted-foreground">Accuracy</p>
+                    <p className="text-2xl font-bold">{overallAccuracy}%</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Progress by Chapter */}
           <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center gap-4">
-                <div className="h-12 w-12 rounded-lg bg-blue-500/10 flex items-center justify-center flex-shrink-0">
-                  <Award className="h-6 w-6 text-blue-500" />
+            <CardHeader>
+              <CardTitle>Progress by Chapter</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {progressData && progressData.length > 0 ? (
+                <div className="space-y-4">
+                  {progressData.map((progress) => {
+                    const completionRate = Math.round(
+                      (progress.completed_exercises / Math.max(progress.total_exercises, 1)) * 100,
+                    )
+                    return (
+                      <div key={progress.id} className="space-y-2">
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1">
+                            <p className="font-medium">{progress.chapters?.title}</p>
+                          </div>
+                          <Badge variant="outline">{progress.accuracy_percentage.toFixed(1)}%</Badge>
+                        </div>
+                        <Progress value={completionRate} className="h-2" />
+                      </div>
+                    )
+                  })}
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm text-muted-foreground">Exercises</p>
-                  <p className="text-2xl font-bold">{totalCompleted}</p>
-                </div>
-              </div>
+              ) : (
+                <p className="text-sm text-muted-foreground text-center py-4">No progress data yet</p>
+              )}
             </CardContent>
           </Card>
 
+          {/* Recent Exercises */}
           <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center gap-4">
-                <div className="h-12 w-12 rounded-lg bg-green-500/10 flex items-center justify-center flex-shrink-0">
-                  <Target className="h-6 w-6 text-green-500" />
+            <CardHeader>
+              <CardTitle>Recent Exercises</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {exercises && exercises.length > 0 ? (
+                <div className="space-y-3">
+                  {exercises.slice(0, 5).map((exercise) => (
+                    <Link key={exercise.id} href={`/exercise/${exercise.id}/results`}>
+                      <div className="flex items-center gap-3 p-3 rounded-lg border hover:bg-accent/50 transition-colors">
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium truncate">{exercise.chapters?.title}</p>
+                        </div>
+                        <Badge variant={exercise.status === "completed" ? "default" : "secondary"}>
+                          {exercise.status}
+                        </Badge>
+                      </div>
+                    </Link>
+                  ))}
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm text-muted-foreground">Accuracy</p>
-                  <p className="text-2xl font-bold">{overallAccuracy}%</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center gap-4">
-                <div className="h-12 w-12 rounded-lg bg-purple-500/10 flex items-center justify-center flex-shrink-0">
-                  <TrendingUp className="h-6 w-6 text-purple-500" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm text-muted-foreground">Total Attempts</p>
-                  <p className="text-2xl font-bold">{totalAttempts}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center gap-4">
-                <div className="h-12 w-12 rounded-lg bg-orange-500/10 flex items-center justify-center flex-shrink-0">
-                  <BookOpen className="h-6 w-6 text-orange-500" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm text-muted-foreground">Chapters</p>
-                  <p className="text-2xl font-bold">{progressData?.length || 0}</p>
-                </div>
-              </div>
+              ) : (
+                <p className="text-sm text-muted-foreground text-center py-4">No exercises yet</p>
+              )}
             </CardContent>
           </Card>
         </div>
-
-        {/* Progress by Chapter */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle>Progress by Chapter</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {progressData && progressData.length > 0 ? (
-              <div className="space-y-4">
-                {progressData.map((progress) => {
-                  const completionRate = Math.round(
-                    (progress.completed_exercises / Math.max(progress.total_exercises, 1)) * 100,
-                  )
-                  return (
-                    <div key={progress.id} className="space-y-2">
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1">
-                          <p className="font-medium">{progress.chapters?.title}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {progress.completed_exercises} of {progress.total_exercises} exercises
-                          </p>
-                        </div>
-                        <Badge variant="outline">{progress.accuracy_percentage.toFixed(1)}% accuracy</Badge>
-                      </div>
-                      <Progress value={completionRate} className="h-2" />
-                    </div>
-                  )
-                })}
-              </div>
-            ) : (
-              <p className="text-sm text-muted-foreground text-center py-4">No progress data yet</p>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Recent Exercises */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent Exercises</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {exercises && exercises.length > 0 ? (
-              <div className="space-y-3">
-                {exercises.slice(0, 10).map((exercise) => (
-                  <Link key={exercise.id} href={`/exercise/${exercise.id}/results`}>
-                    <div className="flex items-center gap-3 p-3 rounded-lg border hover:bg-accent/50 transition-colors">
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium truncate">{exercise.chapters?.title}</p>
-                        <div className="flex items-center gap-2 mt-1">
-                          <Badge variant="outline" className="text-xs">
-                            {exercise.exercise_type}
-                          </Badge>
-                          <Badge variant="outline" className="text-xs">
-                            {exercise.difficulty}
-                          </Badge>
-                        </div>
-                      </div>
-                      <Badge variant={exercise.status === "completed" ? "default" : "secondary"}>{exercise.status}</Badge>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            ) : (
-              <p className="text-sm text-muted-foreground text-center py-4">No exercises yet</p>
-            )}
-          </CardContent>
-        </Card>
       </div>
     </div>
   )

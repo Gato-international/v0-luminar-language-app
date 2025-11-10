@@ -9,9 +9,22 @@ import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
 import { SentenceDisplay } from "@/components/exercise/sentence-display"
 import { CaseSelector } from "@/components/exercise/case-selector"
-import { ArrowLeft, ArrowRight, CheckCircle2, Clock, Loader2, BrainCircuit } from "lucide-react"
+import { ArrowLeft, ArrowRight, CheckCircle2, Clock, Loader2, BrainCircuit, ShieldAlert } from "lucide-react"
 import type { Exercise, Sentence, WordAnnotation, GrammaticalCase, ExerciseAttempt } from "@/lib/types"
 import { toast } from "sonner"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 
 interface ExerciseInterfaceProps {
   exercise: Exercise & { chapters: { id: string; title: string; description: string | null } }
@@ -47,6 +60,11 @@ export function ExerciseInterface({
   const [answers, setAnswers] = useState<Answer[]>([])
   const [startTime] = useState(Date.now())
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isExiting, setIsExiting] = useState(false)
+  const [exitCode, setExitCode] = useState("")
+  const [exitCodeError, setExitCodeError] = useState<string | null>(null)
+
+  const isTestMode = exercise.exercise_type === "test"
 
   useEffect(() => {
     toast("Lumi is watching your progress!", {
@@ -55,36 +73,69 @@ export function ExerciseInterface({
     })
   }, [])
 
+  useEffect(() => {
+    if (!isTestMode || isExiting) return
+
+    const enterFullscreen = () => {
+      document.documentElement.requestFullscreen().catch((err) => {
+        console.error(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`)
+      })
+    }
+
+    enterFullscreen()
+
+    const handleFullscreenChange = () => {
+      if (!document.fullscreenElement && !isExiting) {
+        setTimeout(() => enterFullscreen(), 100)
+      }
+    }
+
+    document.addEventListener("fullscreenchange", handleFullscreenChange)
+
+    return () => {
+      document.removeEventListener("fullscreenchange", handleFullscreenChange)
+      if (document.fullscreenElement) {
+        document.exitFullscreen()
+      }
+    }
+  }, [isTestMode, isExiting])
+
+  const handleExitAttempt = () => {
+    if (exitCode === "1100") {
+      setExitCodeError(null)
+      setIsExiting(true)
+      if (document.exitFullscreen) {
+        document.exitFullscreen().finally(() => router.push("/dashboard/student"))
+      } else {
+        router.push("/dashboard/student")
+      }
+    } else {
+      setExitCodeError("Incorrect code. Please ask your teacher.")
+    }
+  }
+
   const currentSentence = sentences[currentQuestionIndex]
   const currentAnnotations = annotations.filter((a) => a.sentence_id === currentSentence?.id)
 
-  // Get words that need to be identified in current sentence
   const wordsToIdentify = currentAnnotations.map((a) => ({
     wordIndex: a.word_index,
     wordText: a.word_text,
     correctCaseId: a.grammatical_case_id,
   }))
 
-  // Get current answers for this sentence
   const currentSentenceAnswers = answers.filter((a) => a.sentenceId === currentSentence?.id)
 
   const handleWordClick = (wordIndex: number, wordText: string) => {
-    // Check if this word should be identified
     const shouldIdentify = wordsToIdentify.some((w) => w.wordIndex === wordIndex)
     if (!shouldIdentify) return
-
     setSelectedWord({ wordIndex, wordText })
   }
 
   const handleCaseSelect = (caseId: string) => {
     if (!selectedWord || !currentSentence) return
-
     const wordToIdentify = wordsToIdentify.find((w) => w.wordIndex === selectedWord.wordIndex)
     if (!wordToIdentify) return
-
     const isCorrect = wordToIdentify.correctCaseId === caseId
-
-    // Update or add answer
     const newAnswer: Answer = {
       sentenceId: currentSentence.id,
       wordIndex: selectedWord.wordIndex,
@@ -92,14 +143,12 @@ export function ExerciseInterface({
       correctCaseId: wordToIdentify.correctCaseId,
       isCorrect,
     }
-
     setAnswers((prev) => {
       const filtered = prev.filter(
         (a) => !(a.sentenceId === currentSentence.id && a.wordIndex === selectedWord.wordIndex),
       )
       return [...filtered, newAnswer]
     })
-
     setSelectedWord(null)
   }
 
@@ -118,14 +167,12 @@ export function ExerciseInterface({
   }
 
   const handleSubmit = async () => {
+    setIsExiting(true)
     setIsSubmitting(true)
     const supabase = createClient()
 
     try {
-      // Calculate time spent
       const timeSpentSeconds = Math.floor((Date.now() - startTime) / 1000)
-
-      // Save all attempts to database
       const attemptsToSave = answers.map((answer) => ({
         exercise_id: exercise.id,
         sentence_id: answer.sentenceId,
@@ -135,55 +182,26 @@ export function ExerciseInterface({
         is_correct: answer.isCorrect,
         time_spent_seconds: Math.floor(timeSpentSeconds / answers.length),
       }))
-
-      const { error: attemptsError } = await supabase.from("exercise_attempts").insert(attemptsToSave)
-
-      if (attemptsError) throw attemptsError
-
-      // Update exercise status
-      const { error: exerciseError } = await supabase
-        .from("exercises")
-        .update({
-          status: "completed",
-          completed_at: new Date().toISOString(),
-        })
-        .eq("id", exercise.id)
-
-      if (exerciseError) throw exerciseError
-
-      // Update student progress
+      await supabase.from("exercise_attempts").insert(attemptsToSave)
+      await supabase.from("exercises").update({ status: "completed", completed_at: new Date().toISOString() }).eq("id", exercise.id)
+      const { data: existingProgress } = await supabase.from("student_progress").select("*").eq("student_id", exercise.student_id).eq("chapter_id", exercise.chapter_id).single()
       const totalCorrect = answers.filter((a) => a.isCorrect).length
       const totalAttempts = answers.length
       const accuracy = totalAttempts > 0 ? (totalCorrect / totalAttempts) * 100 : 0
-
-      // Get existing progress
-      const { data: existingProgress } = await supabase
-        .from("student_progress")
-        .select("*")
-        .eq("student_id", exercise.student_id)
-        .eq("chapter_id", exercise.chapter_id)
-        .single()
-
       if (existingProgress) {
-        // Update existing progress
         const newTotalCorrect = existingProgress.total_correct + totalCorrect
         const newTotalAttempts = existingProgress.total_attempts + totalAttempts
         const newAccuracy = (newTotalCorrect / newTotalAttempts) * 100
-
-        await supabase
-          .from("student_progress")
-          .update({
-            total_exercises: existingProgress.total_exercises + 1,
-            completed_exercises: existingProgress.completed_exercises + 1,
-            total_correct: newTotalCorrect,
-            total_attempts: newTotalAttempts,
-            accuracy_percentage: newAccuracy,
-            last_practiced_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          })
-          .eq("id", existingProgress.id)
+        await supabase.from("student_progress").update({
+          total_exercises: existingProgress.total_exercises + 1,
+          completed_exercises: existingProgress.completed_exercises + 1,
+          total_correct: newTotalCorrect,
+          total_attempts: newTotalAttempts,
+          accuracy_percentage: newAccuracy,
+          last_practiced_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        }).eq("id", existingProgress.id)
       } else {
-        // Create new progress record
         await supabase.from("student_progress").insert({
           student_id: exercise.student_id,
           chapter_id: exercise.chapter_id,
@@ -195,11 +213,7 @@ export function ExerciseInterface({
           last_practiced_at: new Date().toISOString(),
         })
       }
-
-      // Trigger AI analysis in the background (don't await)
       supabase.functions.invoke("analyze-exercise", { body: { exercise_id: exercise.id } })
-
-      // Redirect to results page
       router.push(`/exercise/${exercise.id}/results`)
     } catch (error) {
       console.error("[v0] Error submitting exercise:", error)
@@ -208,23 +222,14 @@ export function ExerciseInterface({
     }
   }
 
-  // Check if current sentence is complete
   const isCurrentSentenceComplete = wordsToIdentify.every((w) =>
     currentSentenceAnswers.some((a) => a.wordIndex === w.wordIndex),
   )
-
-  // Robustly calculate the total number of words that need to be identified across all sentences.
-  // This prevents issues from bad data (e.g., an annotation with an index outside the sentence's bounds).
   const totalWordsToIdentify = sentences.reduce((count, sentence) => {
     const words = sentence.text.trim().split(/\s+/)
-    const validAnnotationsForSentence = annotations.filter(
-      (a) => a.sentence_id === sentence.id && a.word_index < words.length,
-    ).length
-    return count + validAnnotationsForSentence
+    return count + annotations.filter((a) => a.sentence_id === sentence.id && a.word_index < words.length).length
   }, 0)
-
   const isAllComplete = answers.length >= totalWordsToIdentify
-
   const progressPercentage = totalWordsToIdentify > 0 ? (answers.length / totalWordsToIdentify) * 100 : 0
 
   if (!currentSentence) {
@@ -237,7 +242,6 @@ export function ExerciseInterface({
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
-      {/* Header */}
       <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between mb-4">
@@ -255,6 +259,38 @@ export function ExerciseInterface({
               <Badge variant="outline">
                 Question {currentQuestionIndex + 1} of {sentences.length}
               </Badge>
+              {isTestMode && (
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive" size="sm">
+                      <ShieldAlert className="h-4 w-4 mr-2" />
+                      Exit Test
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Exit Confirmation</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This is a test. To exit, please enter the code provided by your teacher.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <div className="py-4 space-y-2">
+                      <Label htmlFor="exit-code">Teacher's Code</Label>
+                      <Input
+                        id="exit-code"
+                        value={exitCode}
+                        onChange={(e) => setExitCode(e.target.value)}
+                        placeholder="Enter code..."
+                      />
+                      {exitCodeError && <p className="text-sm text-destructive">{exitCodeError}</p>}
+                    </div>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel onClick={() => setExitCodeError(null)}>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleExitAttempt}>Confirm Exit</AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              )}
             </div>
           </div>
           <div className="space-y-2">
@@ -268,7 +304,6 @@ export function ExerciseInterface({
       </header>
 
       <div className="container mx-auto px-4 py-8 max-w-4xl">
-        {/* Instructions */}
         <Card className="mb-6 bg-primary/5 border-primary/20">
           <CardContent className="p-4">
             <p className="text-sm">
@@ -278,7 +313,6 @@ export function ExerciseInterface({
           </CardContent>
         </Card>
 
-        {/* Sentence Display */}
         <Card className="mb-6">
           <CardHeader>
             <CardTitle>Identify the Grammatical Cases</CardTitle>
@@ -295,7 +329,6 @@ export function ExerciseInterface({
           </CardContent>
         </Card>
 
-        {/* Case Selector */}
         {selectedWord && (
           <Card className="mb-6">
             <CardHeader>
@@ -309,7 +342,6 @@ export function ExerciseInterface({
           </Card>
         )}
 
-        {/* Navigation */}
         <div className="flex items-center justify-between">
           <Button variant="outline" onClick={handlePrevious} disabled={currentQuestionIndex === 0 || isSubmitting}>
             <ArrowLeft className="h-4 w-4 mr-2" />

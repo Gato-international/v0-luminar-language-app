@@ -51,7 +51,8 @@ export function FlashcardDialog({ setId, flashcard }: FlashcardDialogProps) {
       }
       setOpen(false)
       router.refresh()
-    } catch (error)      console.error("Error saving flashcard:", error)
+    } catch (error) {
+      console.error("Error saving flashcard:", error)
     } finally {
       setLoading(false)
     }

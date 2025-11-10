@@ -54,7 +54,7 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-screen w-full items-center justify-center p-6 md:p-10 bg-gradient-to-b from-background to-muted/20">
-      <Card className="w-full max-w-4xl grid md:grid-cols-2 shadow-2xl overflow-hidden rounded-2xl">
+      <Card className="w-full max-w-4xl grid md:grid-cols-2 shadow-2xl overflow-hidden rounded-2xl p-0 gap-0">
         {/* Left side: Login Form */}
         <div className="p-6 sm:p-10 flex flex-col justify-center">
           <div className="flex flex-col items-start gap-2 mb-8">

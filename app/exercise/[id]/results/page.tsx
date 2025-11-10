@@ -6,6 +6,7 @@ import { ResultsBreakdown } from "@/components/exercise/results-breakdown"
 import { CasePerformance } from "@/components/exercise/case-performance"
 import { ArrowLeft, RotateCcw } from "lucide-react"
 import Link from "next/link"
+import { PracticeFeedback } from "@/components/exercise/practice-feedback"
 
 interface ResultsPageProps {
   params: Promise<{ id: string }>
@@ -156,7 +157,11 @@ export default async function ResultsPage({ params }: ResultsPageProps) {
                 </Button>
               )}
               <Button asChild>
-                <Link href={profile.role === "teacher" ? `/dashboard/teacher/students/${exercise.student_id}` : "/dashboard/student"}>
+                <Link
+                  href={
+                    profile.role === "teacher" ? `/dashboard/teacher/students/${exercise.student_id}` : "/dashboard/student"
+                  }
+                >
                   <ArrowLeft className="h-4 w-4 mr-2" />
                   {profile.role === "teacher" ? "Back to Student" : "Dashboard"}
                 </Link>
@@ -176,6 +181,13 @@ export default async function ResultsPage({ params }: ResultsPageProps) {
           exerciseType={exercise.exercise_type}
           difficulty={exercise.difficulty}
         />
+
+        {/* Personalized Feedback for Practice Mode */}
+        {exercise.exercise_type === "practice" && casePerformance && (
+          <div className="mt-8">
+            <PracticeFeedback casePerformance={casePerformance} accuracy={accuracy} />
+          </div>
+        )}
 
         {/* Case Performance */}
         {casePerformance && casePerformance.length > 0 && (

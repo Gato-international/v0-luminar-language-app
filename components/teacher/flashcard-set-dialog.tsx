@@ -44,12 +44,13 @@ export function FlashcardSetDialog({ set, chapters }: FlashcardSetDialogProps) {
     const formData = new FormData(e.currentTarget)
     const title = formData.get("title") as string
     const description = formData.get("description") as string
+    const chapterIdToSend = selectedChapter === "none" ? null : selectedChapter
 
     try {
       if (set) {
-        await updateFlashcardSet(set.id, { title, description, chapter_id: selectedChapter || null })
+        await updateFlashcardSet(set.id, { title, description, chapter_id: chapterIdToSend })
       } else {
-        await createFlashcardSet({ title, description, chapter_id: selectedChapter || null })
+        await createFlashcardSet({ title, description, chapter_id: chapterIdToSend })
       }
       setOpen(false)
       router.refresh()
@@ -104,7 +105,7 @@ export function FlashcardSetDialog({ set, chapters }: FlashcardSetDialogProps) {
                   <SelectValue placeholder="Select a chapter" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">None</SelectItem>
+                  <SelectItem value="none">None</SelectItem>
                   {chapters.map((chapter) => (
                     <SelectItem key={chapter.id} value={chapter.id}>
                       {chapter.title}

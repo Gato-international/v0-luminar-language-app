@@ -105,13 +105,13 @@ export default function LoginPage() {
           </form>
         </div>
 
-        {/* Right side: Image and Text */}
-        <div className="hidden md:flex flex-col items-center justify-center bg-muted/50 p-10 text-center border-l">
-          <img src="/placeholder.svg" alt="Language Learning" className="w-3/4" />
-          <h3 className="mt-6 text-2xl font-bold">Unlock Your Potential</h3>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Join our community and take your language skills to the next level with interactive exercises.
-          </p>
+        {/* Right side: Image */}
+        <div className="hidden md:block">
+          <img
+            src="/login-image.png"
+            alt="Abstract art representing language learning"
+            className="w-full h-full object-cover"
+          />
         </div>
       </Card>
     </div>

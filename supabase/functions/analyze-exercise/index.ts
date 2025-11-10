@@ -17,29 +17,25 @@ serve(async (req) => {
       throw new Error("Missing exercise_id")
     }
 
-    // Use the service role key to bypass RLS for data aggregation
     const supabaseAdmin = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     )
 
-    // Fetch all necessary data for analysis
-    const { data: exercise, error: exerciseError } = await supabaseAdmin
-      .from("exercises")
-      .select("*, student_id, chapters(title)")
-      .eq("id", exercise_id)
-      .single()
+    // Fetch all necessary data in parallel to improve performance
+    const [exerciseResult, attemptsResult, casesResult] = await Promise.all([
+      supabaseAdmin.from("exercises").select("*, student_id, chapters(title)").eq("id", exercise_id).single(),
+      supabaseAdmin.from("exercise_attempts").select("is_correct, correct_case_id").eq("exercise_id", exercise_id),
+      supabaseAdmin.from("grammatical_cases").select("id, name"),
+    ])
 
+    const { data: exercise, error: exerciseError } = exerciseResult
     if (exerciseError || !exercise) throw new Error(`Exercise not found: ${exerciseError?.message}`)
 
-    const { data: attempts, error: attemptsError } = await supabaseAdmin
-      .from("exercise_attempts")
-      .select("is_correct, correct_case_id")
-      .eq("exercise_id", exercise_id)
-
+    const { data: attempts, error: attemptsError } = attemptsResult
     if (attemptsError) throw new Error(`Could not fetch attempts: ${attemptsError.message}`)
 
-    const { data: cases, error: casesError } = await supabaseAdmin.from("grammatical_cases").select("id, name")
+    const { data: cases, error: casesError } = casesResult
     if (casesError) throw new Error(`Could not fetch cases: ${casesError.message}`)
 
     // Process data for the prompt

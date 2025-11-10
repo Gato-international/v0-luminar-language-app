@@ -1,10 +1,9 @@
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import { ChapterCard } from "@/components/student/chapter-card"
-import { ProgressStats } from "@/components/student/progress-stats"
 import { RecentActivity } from "@/components/student/recent-activity"
-import { Button } from "@/components/ui/button"
-import { BookOpen, LogOut } from "lucide-react"
+import { BookOpen } from "lucide-react"
+import { UserNav } from "@/components/student/user-nav"
 
 export default async function StudentDashboardPage() {
   const supabase = await createClient()
@@ -33,21 +32,17 @@ export default async function StudentDashboardPage() {
   // Get recent exercises
   const { data: recentExercises } = await supabase
     .from("exercises")
-    .select(`
+    .select(
+      `
       *,
       chapters (
         title
       )
-    `)
+    `,
+    )
     .eq("student_id", user.id)
     .order("created_at", { ascending: false })
     .limit(5)
-
-  // Calculate overall stats
-  const totalCompleted = progressData?.reduce((sum, p) => sum + p.completed_exercises, 0) || 0
-  const totalCorrect = progressData?.reduce((sum, p) => sum + p.total_correct, 0) || 0
-  const totalAttempts = progressData?.reduce((sum, p) => sum + p.total_attempts, 0) || 0
-  const overallAccuracy = totalAttempts > 0 ? Math.round((totalCorrect / totalAttempts) * 100) : 0
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
@@ -61,17 +56,7 @@ export default async function StudentDashboardPage() {
               <p className="text-sm text-muted-foreground">Student Dashboard</p>
             </div>
           </div>
-          <div className="flex items-center gap-4">
-            <div className="text-right">
-              <p className="text-sm font-medium">{profile.full_name || "Student"}</p>
-              <p className="text-xs text-muted-foreground">{profile.email}</p>
-            </div>
-            <form action="/auth/signout" method="post">
-              <Button variant="ghost" size="icon" type="submit">
-                <LogOut className="h-4 w-4" />
-              </Button>
-            </form>
-          </div>
+          <UserNav profile={profile} />
         </div>
       </header>
 
@@ -81,14 +66,6 @@ export default async function StudentDashboardPage() {
           <h2 className="text-3xl font-bold mb-2">Welcome back, {profile.full_name?.split(" ")[0] || "Student"}!</h2>
           <p className="text-muted-foreground">Continue your journey to master Dutch grammar</p>
         </div>
-
-        {/* Progress Stats */}
-        <ProgressStats
-          totalCompleted={totalCompleted}
-          overallAccuracy={overallAccuracy}
-          totalAttempts={totalAttempts}
-          chaptersStarted={progressData?.length || 0}
-        />
 
         {/* Chapters Grid */}
         <div className="mt-12">

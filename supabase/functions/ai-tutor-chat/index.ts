@@ -1,5 +1,4 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts"
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0"
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -17,53 +16,12 @@ serve(async (req) => {
       throw new Error("Missing messages in request body")
     }
 
-    // 1. Create a client with the user's auth token to get the authenticated user
-    const supabase = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_ANON_KEY")!, {
-      global: { headers: { Authorization: req.headers.get("Authorization")! } },
-    })
-
-    const {
-      data: { user },
-    } = await supabase.auth.getUser()
-    if (!user) {
-      return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: corsHeaders })
-    }
-
-    // 2. Create an admin client to securely fetch data, bypassing RLS
-    const supabaseAdmin = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
-    )
-
-    // 3. Fetch student's performance data using the admin client, but scoped to the authenticated user's ID
-    const { data: progressData, error: progressError } = await supabaseAdmin
-      .from("student_progress")
-      .select("*, chapters(title)")
-      .eq("student_id", user.id) // Securely scope to the authenticated user
-      .order("accuracy_percentage", { ascending: true }) // Get weakest areas first
-      .limit(5)
-
-    if (progressError) {
-      throw new Error(`Could not retrieve student progress: ${progressError.message}`)
-    }
-
-    const studentData = {
-      weakestAreas:
-        progressData?.map((p) => ({
-          chapter: p.chapters?.title || "Untitled Chapter",
-          accuracy: p.accuracy_percentage,
-        })) || [],
-    }
+    // NOTE: Authentication and data fetching are temporarily removed to isolate the Gemini API call.
 
     const prompt = `
-      You are 'Lumi', a friendly and encouraging AI language tutor for the Luminar platform.
-      Your goal is to help the student understand grammar concepts and practice effectively.
+      You are 'Lumi', a friendly and encouraging AI language tutor.
+      Your goal is to help a student understand grammar concepts.
       Your tone should be patient, clear, and supportive.
-
-      **Student Performance Data (Weakest Areas):**
-      ---
-      ${JSON.stringify(studentData, null, 2)}
-      ---
 
       **Conversation History:**
       ---
@@ -71,11 +29,9 @@ serve(async (req) => {
       ---
 
       **Your Task:**
-      - If the conversation history is empty, introduce yourself warmly. For example: "Hi there! I'm Lumi, your personal AI tutor. I'm here to help you master grammar. Feel free to ask me any questions or ask for a practice sentence!".
-      - Respond to the student's latest message based on their question and their performance data.
-      - If the student asks for a practice sentence, generate a new, relevant sentence targeting one of their weak areas if possible. Ask them to identify a grammatical case or concept within it.
-      - If the student asks a grammar question, explain it clearly and simply, using examples.
-      - Keep your responses focused on learning the language. Do not go off-topic.
+      - If the conversation history is empty, introduce yourself warmly.
+      - Respond to the student's latest message.
+      - Keep your responses focused on learning language.
     `
 
     const geminiApiKey = Deno.env.get("GEMINI_API_KEY")
@@ -91,7 +47,8 @@ serve(async (req) => {
     })
 
     if (!geminiResponse.ok) {
-      throw new Error(`Gemini API error: ${await geminiResponse.text()}`)
+      const errorBody = await geminiResponse.text()
+      throw new Error(`Gemini API error: ${geminiResponse.status} ${errorBody}`)
     }
 
     const geminiData = await geminiResponse.json()
@@ -117,7 +74,8 @@ serve(async (req) => {
       status: 200,
     })
   } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
+    // This will now be the primary source of debugging information.
+    return new Response(JSON.stringify({ error: `Function Error: ${error.message}` }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
     })

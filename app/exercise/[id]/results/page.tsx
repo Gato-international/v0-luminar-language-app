@@ -7,6 +7,7 @@ import { CasePerformance } from "@/components/exercise/case-performance"
 import { ArrowLeft, RotateCcw } from "lucide-react"
 import Link from "next/link"
 import { PracticeFeedback } from "@/components/exercise/practice-feedback"
+import { AIFeedbackDisplay } from "@/components/exercise/ai-feedback-display"
 
 interface ResultsPageProps {
   params: Promise<{ id: string }>
@@ -181,6 +182,11 @@ export default async function ResultsPage({ params }: ResultsPageProps) {
           exerciseType={exercise.exercise_type}
           difficulty={exercise.difficulty}
         />
+
+        {/* AI Feedback */}
+        <div className="mt-8">
+          <AIFeedbackDisplay exerciseId={exercise.id} />
+        </div>
 
         {/* Personalized Feedback for Practice Mode */}
         {exercise.exercise_type === "practice" && casePerformance && (

@@ -3,6 +3,7 @@ import type { Metadata } from "next"
 import "@fontsource/inter" // Imports the Inter font
 import { Analytics } from "@vercel/analytics/next"
 import "./globals.css"
+import { Toaster } from "sonner"
 
 export const metadata: Metadata = {
   title: "Luminar - Language Learning Platform",
@@ -20,6 +21,7 @@ export default function RootLayout({
       <body className="font-sans antialiased">
         {children}
         <Analytics />
+        <Toaster />
       </body>
     </html>
   )

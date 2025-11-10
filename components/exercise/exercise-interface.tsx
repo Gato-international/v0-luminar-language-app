@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
@@ -9,8 +9,9 @@ import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
 import { SentenceDisplay } from "@/components/exercise/sentence-display"
 import { CaseSelector } from "@/components/exercise/case-selector"
-import { ArrowLeft, ArrowRight, CheckCircle2, Clock, Loader2 } from "lucide-react"
+import { ArrowLeft, ArrowRight, CheckCircle2, Clock, Loader2, BrainCircuit } from "lucide-react"
 import type { Exercise, Sentence, WordAnnotation, GrammaticalCase, ExerciseAttempt } from "@/lib/types"
+import { toast } from "sonner"
 
 interface ExerciseInterfaceProps {
   exercise: Exercise & { chapters: { id: string; title: string; description: string | null } }
@@ -46,6 +47,13 @@ export function ExerciseInterface({
   const [answers, setAnswers] = useState<Answer[]>([])
   const [startTime] = useState(Date.now())
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  useEffect(() => {
+    toast("Lumi is watching your progress!", {
+      description: "Complete the exercise to get personalized AI feedback.",
+      icon: <BrainCircuit className="h-5 w-5 text-primary" />,
+    })
+  }, [])
 
   const currentSentence = sentences[currentQuestionIndex]
   const currentAnnotations = annotations.filter((a) => a.sentence_id === currentSentence?.id)
@@ -187,6 +195,9 @@ export function ExerciseInterface({
           last_practiced_at: new Date().toISOString(),
         })
       }
+
+      // Trigger AI analysis in the background (don't await)
+      supabase.functions.invoke("analyze-exercise", { body: { exercise_id: exercise.id } })
 
       // Redirect to results page
       router.push(`/exercise/${exercise.id}/results`)

@@ -63,6 +63,7 @@ export function ExerciseInterface({
   const [isExiting, setIsExiting] = useState(false)
   const [exitCode, setExitCode] = useState("")
   const [exitCodeError, setExitCodeError] = useState<string | null>(null)
+  const [isFocusLost, setIsFocusLost] = useState(false)
 
   const isTestMode = exercise.exercise_type === "test"
   const [testStarted, setTestStarted] = useState(!isTestMode)
@@ -79,16 +80,9 @@ export function ExerciseInterface({
   useEffect(() => {
     if (!isTestMode || isExiting || !testStarted) return
 
-    const enterFullscreen = () => {
-      if (document.fullscreenElement) return
-      document.documentElement.requestFullscreen().catch((err) => {
-        console.error(`Error attempting to re-enable full-screen mode: ${err.message} (${err.name})`)
-      })
-    }
-
     const handleFullscreenChange = () => {
       if (!document.fullscreenElement && !isExiting) {
-        setTimeout(() => enterFullscreen(), 100)
+        setIsFocusLost(true)
       }
     }
 
@@ -108,6 +102,18 @@ export function ExerciseInterface({
     })
     setTestStarted(true)
     setStartTime(Date.now())
+  }
+
+  const handleResumeTest = () => {
+    document.documentElement
+      .requestFullscreen()
+      .then(() => {
+        setIsFocusLost(false)
+      })
+      .catch((err) => {
+        console.error(`Could not re-enter fullscreen: ${err.message}`)
+        toast.error("Could not re-enter fullscreen. Please click the button again.")
+      })
   }
 
   const handleExitAttempt = () => {
@@ -261,6 +267,27 @@ export function ExerciseInterface({
             </p>
             <Button onClick={handleStartTest} size="lg" className="w-full">
               Begin Test
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
+  if (isFocusLost) {
+    return (
+      <div className="min-h-screen w-full flex items-center justify-center bg-background p-4">
+        <Card className="max-w-lg text-center">
+          <CardHeader>
+            <div className="mx-auto mb-4 h-16 w-16 rounded-full bg-destructive/10 flex items-center justify-center">
+              <ShieldAlert className="h-8 w-8 text-destructive" />
+            </div>
+            <CardTitle className="text-2xl">Focus Mode Required</CardTitle>
+            <CardDescription>You have exited fullscreen. Please resume to continue the test.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button onClick={handleResumeTest} size="lg" className="w-full">
+              Resume Test
             </Button>
           </CardContent>
         </Card>

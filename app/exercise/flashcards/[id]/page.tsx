@@ -3,11 +3,11 @@ import { redirect } from "next/navigation"
 import { FlashcardExercise } from "@/components/student/flashcard-exercise"
 
 interface FlashcardExercisePageProps {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }
 
 export default async function FlashcardExercisePage({ params }: FlashcardExercisePageProps) {
-  const { id: setId } = params
+  const { id: setId } = await params
   const supabase = await createClient()
 
   const {

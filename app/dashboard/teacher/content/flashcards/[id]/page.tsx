@@ -23,10 +23,25 @@ export default async function FlashcardSetDetailPage({ params }: FlashcardSetDet
   const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single()
   if (!profile || profile.role !== "teacher") redirect("/auth/login")
 
-  const { data: set } = await supabase.from("flashcard_sets").select("*").eq("id", setId).single()
-  if (!set) redirect("/dashboard/teacher/content/flashcards")
+  const { data: set } = await supabase
+    .from("flashcard_sets")
+    .select(
+      `
+      *,
+      flashcards (
+        *
+      )
+    `,
+    )
+    .eq("id", setId)
+    .order("created_at", { foreignTable: "flashcards" })
+    .single()
 
-  const { data: flashcards } = await supabase.from("flashcards").select("*").eq("set_id", setId).order("created_at")
+  if (!set) {
+    redirect("/dashboard/teacher/content/flashcards")
+  }
+
+  const flashcards = set.flashcards || []
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">

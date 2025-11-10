@@ -24,23 +24,15 @@ export default async function FlashcardSetDetailPage({ params }: FlashcardSetDet
   if (!profile || profile.role !== "teacher") redirect("/auth/login")
 
   // Fetch the flashcard set first
-  const { data: set } = await supabase
-    .from("flashcard_sets")
-    .select("*")
-    .eq("id", setId)
-    .single()
+  const { data: set, error: setError } = await supabase.from("flashcard_sets").select("*").eq("id", setId).single()
 
-  // If the set doesn't exist, redirect back to the list
-  if (!set) {
+  // If the set doesn't exist or there's an error, redirect back to the list
+  if (setError || !set) {
     redirect("/dashboard/teacher/content/flashcards")
   }
 
   // Then, fetch the flashcards belonging to this set
-  const { data: flashcards } = await supabase
-    .from("flashcards")
-    .select("*")
-    .eq("set_id", setId)
-    .order("created_at")
+  const { data: flashcards } = await supabase.from("flashcards").select("*").eq("set_id", setId).order("created_at")
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">

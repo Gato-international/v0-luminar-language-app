@@ -68,7 +68,7 @@ export function FlashcardDialog({ setId }: FlashcardDialogProps) {
               <Input id="term" name="term" required placeholder="e.g., Hallo" />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="definition">Definition(s)</Label>
+              <Label htmlFor="definition">Meaning(s)</Label>
               <Input id="definition" name="definition" required placeholder="e.g., Hello; Hi" />
               <p className="text-xs text-muted-foreground">Separate multiple correct meanings with a semicolon (;).</p>
             </div>

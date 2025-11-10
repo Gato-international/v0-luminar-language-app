@@ -90,7 +90,7 @@ export function EditableFlashcardCard({ flashcard, setId }: EditableFlashcardCar
               <Input id="term" name="term" defaultValue={flashcard.term} required />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="definition">Definition(s)</Label>
+              <Label htmlFor="definition">Meaning(s)</Label>
               <Input id="definition" name="definition" defaultValue={flashcard.definition} required />
               <p className="text-xs text-muted-foreground">Separate multiple correct meanings with a semicolon (;).</p>
             </div>

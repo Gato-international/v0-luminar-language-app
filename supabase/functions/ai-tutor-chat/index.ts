@@ -95,6 +95,21 @@ serve(async (req) => {
     }
 
     const geminiData = await geminiResponse.json()
+
+    if (
+      !geminiData.candidates ||
+      geminiData.candidates.length === 0 ||
+      !geminiData.candidates[0].content ||
+      !geminiData.candidates[0].content.parts ||
+      geminiData.candidates[0].content.parts.length === 0
+    ) {
+      const feedback = geminiData.promptFeedback
+      if (feedback && feedback.blockReason) {
+        throw new Error(`Gemini API request was blocked. Reason: ${feedback.blockReason}`)
+      }
+      throw new Error("Received an invalid or empty response from the AI model.")
+    }
+
     const reply = geminiData.candidates[0].content.parts[0].text
 
     return new Response(JSON.stringify({ reply }), {

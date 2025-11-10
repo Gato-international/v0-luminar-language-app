@@ -7,7 +7,7 @@ export default function HomePage() {
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 flex items-center justify-center relative overflow-hidden">
       {/* Glowing background effect */}
       <div
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60vw] h-[60vh] max-w-[800px] max-h-[800px] bg-chart-2/20 rounded-full blur-[150px] animate-pulse"
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[60vw] h-[60vh] max-w-[800px] max-h-[800px] bg-chart-3/30 rounded-full blur-[150px] animate-pulse"
         style={{ animationDuration: "5s" }}
       />
 

@@ -155,7 +155,7 @@ export function FlashcardExercise({ set, flashcards }: FlashcardExerciseProps) {
             <div className="text-center min-h-[6rem] flex flex-col justify-center">
               <p className="text-sm text-muted-foreground">TERM</p>
               {currentCard && (
-                <p key={currentCard.id} className="text-4xl font-bold animate-in fade-in-50 zoom-in-90 duration-700">
+                <p key={currentCard.id} className="text-4xl font-bold animate-in fade-in-50 zoom-in-75 duration-700">
                   {currentCard.term}
                 </p>
               )}

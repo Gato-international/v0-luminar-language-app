@@ -32,6 +32,7 @@ interface ExerciseInterfaceProps {
   annotations: (WordAnnotation & { grammatical_cases: GrammaticalCase })[]
   grammaticalCases: GrammaticalCase[]
   existingAttempts: ExerciseAttempt[]
+  enforceFocusMode: boolean
 }
 
 interface WordSelection {
@@ -53,6 +54,7 @@ export function ExerciseInterface({
   annotations,
   grammaticalCases,
   existingAttempts,
+  enforceFocusMode,
 }: ExerciseInterfaceProps) {
   const router = useRouter()
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
@@ -65,7 +67,7 @@ export function ExerciseInterface({
   const [exitCodeError, setExitCodeError] = useState<string | null>(null)
   const [isFocusLost, setIsFocusLost] = useState(false)
 
-  const isTestMode = exercise.exercise_type === "test"
+  const isTestMode = exercise.exercise_type === "test" && enforceFocusMode
   const [testStarted, setTestStarted] = useState(!isTestMode)
 
   useEffect(() => {

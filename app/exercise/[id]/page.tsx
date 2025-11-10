@@ -90,6 +90,15 @@ export default async function ExercisePage({ params }: ExercisePageProps) {
   // Get existing attempts for this exercise
   const { data: existingAttempts } = await supabase.from("exercise_attempts").select("*").eq("exercise_id", id)
 
+  // Get the platform setting for focus mode
+  const { data: focusModeSetting } = await supabase
+    .from("platform_settings")
+    .select("value")
+    .eq("key", "enforce_test_focus_mode")
+    .single()
+
+  const enforceFocusMode = focusModeSetting?.value ?? true // Default to true
+
   return (
     <ExerciseInterface
       exercise={exercise}
@@ -97,6 +106,7 @@ export default async function ExercisePage({ params }: ExercisePageProps) {
       annotations={annotations || []}
       grammaticalCases={grammaticalCases || []}
       existingAttempts={existingAttempts || []}
+      enforceFocusMode={enforceFocusMode}
     />
   )
 }

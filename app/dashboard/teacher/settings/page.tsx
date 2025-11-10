@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button"
 import { ArrowLeft } from "lucide-react"
 import Link from "next/link"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { FocusModeToggle } from "@/components/teacher/focus-mode-toggle"
 
 export default async function SettingsPage() {
   const supabase = await createClient()
@@ -21,6 +22,15 @@ export default async function SettingsPage() {
   if (!profile || profile.role !== "teacher") {
     redirect("/auth/login")
   }
+
+  // Fetch the setting
+  const { data: focusModeSetting } = await supabase
+    .from("platform_settings")
+    .select("value")
+    .eq("key", "enforce_test_focus_mode")
+    .single()
+
+  const isFocusModeEnabled = focusModeSetting?.value ?? true // Default to true if not set
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
@@ -42,8 +52,8 @@ export default async function SettingsPage() {
           <CardHeader>
             <CardTitle>Platform Settings</CardTitle>
           </CardHeader>
-          <CardContent>
-            <p className="text-muted-foreground">Settings features will be available in the next update.</p>
+          <CardContent className="space-y-4">
+            <FocusModeToggle initialValue={isFocusModeEnabled} />
           </CardContent>
         </Card>
       </div>

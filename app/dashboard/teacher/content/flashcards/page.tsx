@@ -1,13 +1,11 @@
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+import { Card, CardContent } from "@/components/ui/card"
 import { ArrowLeft, Sparkles } from "lucide-react"
 import Link from "next/link"
 import { FlashcardSetDialog } from "@/components/teacher/flashcard-set-dialog"
-import { DeleteDialog } from "@/components/teacher/delete-dialog"
-import { deleteFlashcardSet } from "@/app/actions/flashcards"
+import { FlashcardSetCard } from "@/components/teacher/flashcard-set-card"
 
 export default async function FlashcardsPage() {
   const supabase = await createClient()
@@ -64,37 +62,9 @@ export default async function FlashcardsPage() {
       <div className="container mx-auto px-4 py-8">
         {flashcardSets && flashcardSets.length > 0 ? (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {flashcardSets.map((set) => {
-              const flashcardCount = set.flashcards[0]?.count || 0
-              return (
-                <Link key={set.id} href={`/dashboard/teacher/content/flashcards/${set.id}`} className="flex">
-                  <Card className="hover:shadow-lg transition-shadow w-full">
-                    <CardHeader>
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-3 mb-2">
-                            {set.chapters && <Badge variant="outline">{set.chapters.title}</Badge>}
-                            <CardTitle className="text-xl">{set.title}</CardTitle>
-                          </div>
-                          <p className="text-sm text-muted-foreground">{set.description || "No description"}</p>
-                        </div>
-                        <div className="flex items-center gap-2 -mr-4">
-                          <FlashcardSetDialog set={set} chapters={chapters || []} />
-                          <DeleteDialog id={set.id} type="flashcard set" onDelete={deleteFlashcardSet} />
-                        </div>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                        <span>{flashcardCount} flashcards</span>
-                        <span>•</span>
-                        <span>Created {new Date(set.created_at).toLocaleDateString()}</span>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </Link>
-              )
-            })}
+            {flashcardSets.map((set) => (
+              <FlashcardSetCard key={set.id} set={set} chapters={chapters || []} />
+            ))}
           </div>
         ) : (
           <Card>

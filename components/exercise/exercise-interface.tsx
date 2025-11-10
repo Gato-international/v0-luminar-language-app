@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
 import { SentenceDisplay } from "@/components/exercise/sentence-display"
@@ -58,31 +58,33 @@ export function ExerciseInterface({
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
   const [selectedWord, setSelectedWord] = useState<WordSelection | null>(null)
   const [answers, setAnswers] = useState<Answer[]>([])
-  const [startTime] = useState(Date.now())
+  const [startTime, setStartTime] = useState(Date.now())
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isExiting, setIsExiting] = useState(false)
   const [exitCode, setExitCode] = useState("")
   const [exitCodeError, setExitCodeError] = useState<string | null>(null)
 
   const isTestMode = exercise.exercise_type === "test"
+  const [testStarted, setTestStarted] = useState(!isTestMode)
 
   useEffect(() => {
-    toast("Lumi is watching your progress!", {
-      description: "Complete the exercise to get personalized AI feedback.",
-      icon: <BrainCircuit className="h-5 w-5 text-primary" />,
-    })
-  }, [])
-
-  useEffect(() => {
-    if (!isTestMode || isExiting) return
-
-    const enterFullscreen = () => {
-      document.documentElement.requestFullscreen().catch((err) => {
-        console.error(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`)
+    if (testStarted) {
+      toast("Lumi is watching your progress!", {
+        description: "Complete the exercise to get personalized AI feedback.",
+        icon: <BrainCircuit className="h-5 w-5 text-primary" />,
       })
     }
+  }, [testStarted])
 
-    enterFullscreen()
+  useEffect(() => {
+    if (!isTestMode || isExiting || !testStarted) return
+
+    const enterFullscreen = () => {
+      if (document.fullscreenElement) return
+      document.documentElement.requestFullscreen().catch((err) => {
+        console.error(`Error attempting to re-enable full-screen mode: ${err.message} (${err.name})`)
+      })
+    }
 
     const handleFullscreenChange = () => {
       if (!document.fullscreenElement && !isExiting) {
@@ -98,7 +100,15 @@ export function ExerciseInterface({
         document.exitFullscreen()
       }
     }
-  }, [isTestMode, isExiting])
+  }, [isTestMode, isExiting, testStarted])
+
+  const handleStartTest = () => {
+    document.documentElement.requestFullscreen().catch((err) => {
+      console.error(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`)
+    })
+    setTestStarted(true)
+    setStartTime(Date.now())
+  }
 
   const handleExitAttempt = () => {
     if (exitCode === "1100") {
@@ -231,6 +241,32 @@ export function ExerciseInterface({
   }, 0)
   const isAllComplete = answers.length >= totalWordsToIdentify
   const progressPercentage = totalWordsToIdentify > 0 ? (answers.length / totalWordsToIdentify) * 100 : 0
+
+  if (isTestMode && !testStarted) {
+    return (
+      <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-b from-background to-muted/20 p-4">
+        <Card className="max-w-lg text-center">
+          <CardHeader>
+            <div className="mx-auto mb-4 h-16 w-16 rounded-full bg-destructive/10 flex items-center justify-center">
+              <ShieldAlert className="h-8 w-8 text-destructive" />
+            </div>
+            <CardTitle className="text-2xl">Focus Mode Enabled</CardTitle>
+            <CardDescription>
+              This is a test. To ensure a fair and focused environment, this session will be in fullscreen mode.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              You will not be able to exit fullscreen until you complete the test or use the teacher's exit code.
+            </p>
+            <Button onClick={handleStartTest} size="lg" className="w-full">
+              Begin Test
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
 
   if (!currentSentence) {
     return (

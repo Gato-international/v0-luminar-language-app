@@ -20,13 +20,8 @@ export default function HomePage() {
           </div>
 
           <h1 className="text-4xl md:text-6xl font-bold tracking-tight text-balance">
-            Master Dutch Grammar with <span className="text-primary">Luminar</span>
+            Master Grammar with <span className="text-primary">Luminar</span>
           </h1>
-
-          <p className="text-lg md:text-xl text-muted-foreground text-balance max-w-2xl">
-            An intelligent platform for students and teachers to practice and master grammatical case analysis through
-            interactive exercises.
-          </p>
 
           <div className="flex flex-col sm:flex-row gap-4 mt-4">
             <Button asChild size="lg" className="text-base">

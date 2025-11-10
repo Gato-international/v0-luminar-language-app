@@ -12,27 +12,61 @@ serve(async (req) => {
   }
 
   try {
+    // 1. Get payload
     const { student_id, messages } = await req.json()
     if (!student_id || !messages) {
-      throw new Error("Missing student_id or messages")
+      return new Response(JSON.stringify({ error: "Missing student_id or messages" }), {
+        status: 400,
+        headers: corsHeaders,
+      })
     }
 
+    // 2. Create a client with the user's auth token to verify they are a teacher
     const supabase = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_ANON_KEY")!, {
       global: { headers: { Authorization: req.headers.get("Authorization")! } },
     })
 
-    // Fetch student data with proper error handling
-    const { data: student, error: studentError } = await supabase
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+    if (!user) {
+      return new Response(JSON.stringify({ error: "Unauthorized: Not authenticated" }), {
+        status: 401,
+        headers: corsHeaders,
+      })
+    }
+
+    const { data: profile, error: profileError } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .single()
+
+    if (profileError || !profile || profile.role !== "teacher") {
+      return new Response(JSON.stringify({ error: "Unauthorized: User is not a teacher" }), {
+        status: 403,
+        headers: corsHeaders,
+      })
+    }
+
+    // 3. Now that we've verified the user is a teacher, create an admin client to fetch data
+    const supabaseAdmin = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+    )
+
+    // 4. Fetch student data using the admin client
+    const { data: student, error: studentError } = await supabaseAdmin
       .from("profiles")
       .select("full_name")
       .eq("id", student_id)
       .single()
 
     if (studentError || !student) {
-      throw new Error(`Could not retrieve student profile. ${studentError?.message || ""}`)
+      throw new Error(`Could not retrieve student profile. ${studentError?.message || "Student not found."}`)
     }
 
-    const { data: progressData, error: progressError } = await supabase
+    const { data: progressData, error: progressError } = await supabaseAdmin
       .from("student_progress")
       .select("*, chapters(title)")
       .eq("student_id", student_id)
@@ -96,7 +130,6 @@ serve(async (req) => {
 
     const geminiData = await geminiResponse.json()
 
-    // Defensive check for Gemini response structure
     if (
       !geminiData.candidates ||
       geminiData.candidates.length === 0 ||
@@ -118,6 +151,7 @@ serve(async (req) => {
       status: 200,
     })
   } catch (error) {
+    console.error("Edge function error:", error.message)
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,

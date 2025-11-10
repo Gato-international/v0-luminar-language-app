@@ -8,11 +8,11 @@ import { FlashcardDialog } from "@/components/teacher/flashcard-dialog"
 import { EditableFlashcardCard } from "@/components/teacher/editable-flashcard-card"
 
 interface FlashcardSetDetailPageProps {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }
 
 export default async function FlashcardSetDetailPage({ params }: FlashcardSetDetailPageProps) {
-  const { id: setId } = params
+  const { id: setId } = await params
   const supabase = await createClient()
 
   const {

@@ -36,10 +36,21 @@ export function FlashcardExercise({ set, flashcards }: FlashcardExerciseProps) {
   const [correctCount, setCorrectCount] = useState(0)
   const [incorrectCount, setIncorrectCount] = useState(0)
   const [sessionFinished, setSessionFinished] = useState(false)
+  const [showInput, setShowInput] = useState(false)
 
   useEffect(() => {
     setShuffledCards([...flashcards].sort(() => Math.random() - 0.5))
   }, [flashcards])
+
+  useEffect(() => {
+    // This effect controls the animation sequence for each new card
+    setShowInput(false)
+    const timer = setTimeout(() => {
+      setShowInput(true)
+    }, 700) // Delay for the term animation to play
+
+    return () => clearTimeout(timer)
+  }, [currentIndex]) // Re-run whenever the card changes
 
   const currentCard = useMemo(() => shuffledCards[currentIndex], [shuffledCards, currentIndex])
 
@@ -141,32 +152,40 @@ export function FlashcardExercise({ set, flashcards }: FlashcardExerciseProps) {
           )}
         >
           <CardContent className="p-8 space-y-6">
-            <div className="text-center">
+            <div className="text-center min-h-[6rem] flex flex-col justify-center">
               <p className="text-sm text-muted-foreground">TERM</p>
-              <p className="text-3xl font-bold">{currentCard.term}</p>
-            </div>
-            <div className="space-y-2">
-              <Input
-                value={inputValue}
-                onChange={(e) => setInputValue(e.target.value)}
-                placeholder="Type the meaning..."
-                disabled={feedback !== "none"}
-                onKeyDown={(e) => e.key === "Enter" && feedback === "none" && handleCheck()}
-              />
-              {feedback === "none" ? (
-                <Button onClick={handleCheck} className="w-full">
-                  Check Answer
-                </Button>
-              ) : (
-                <Button onClick={handleNext} className="w-full">
-                  Next Card
-                </Button>
+              {currentCard && (
+                <p key={currentCard.id} className="text-4xl font-bold animate-in fade-in-50 zoom-in-90 duration-700">
+                  {currentCard.term}
+                </p>
               )}
             </div>
-            {feedback !== "none" && (
+
+            {showInput && (
+              <div className="space-y-2 animate-in fade-in-0 duration-500">
+                <Input
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
+                  placeholder="Type the meaning..."
+                  disabled={feedback !== "none"}
+                  onKeyDown={(e) => e.key === "Enter" && feedback === "none" && handleCheck()}
+                />
+                {feedback === "none" ? (
+                  <Button onClick={handleCheck} className="w-full">
+                    Check Answer
+                  </Button>
+                ) : (
+                  <Button onClick={handleNext} className="w-full">
+                    Next Card
+                  </Button>
+                )}
+              </div>
+            )}
+
+            {showInput && feedback !== "none" && (
               <div
                 className={cn(
-                  "p-4 rounded-md text-center",
+                  "p-4 rounded-md text-center animate-in fade-in-0 duration-500",
                   feedback === "correct" ? "bg-green-500/10 text-green-700" : "bg-destructive/10 text-destructive",
                 )}
               >

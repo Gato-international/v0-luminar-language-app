@@ -48,6 +48,22 @@ interface CardResult {
   }
 }
 
+// Helper function to check answers with optional suffixes
+const checkAnswerWithSuffix = (studentAnswer: string, correctAnswer: string): boolean => {
+  const studentInput = studentAnswer.trim().toLowerCase()
+  const pattern = /(.*?)\((.*?)\)/
+  const match = correctAnswer.match(pattern)
+
+  if (match) {
+    const base = match[1].trim().toLowerCase()
+    const suffix = match[2].trim().toLowerCase()
+    const fullWord = base + suffix
+    return studentInput === base || studentInput === fullWord
+  } else {
+    return studentInput === correctAnswer.trim().toLowerCase()
+  }
+}
+
 export function FlashcardExercise({ set, flashcards, groups, genders }: FlashcardExerciseProps) {
   const router = useRouter()
   const [shuffledCards, setShuffledCards] = useState<Flashcard[]>([])
@@ -77,9 +93,10 @@ export function FlashcardExercise({ set, flashcards, groups, genders }: Flashcar
   const handleCheck = () => {
     if (!currentCard) return
 
-    const correctMeanings = currentCard.definition.split(";").map((m) => m.trim().toLowerCase())
-    const isMeaningCorrect = correctMeanings.includes(meaningInput.trim().toLowerCase())
-    const isStemCorrect = stemInput.trim().toLowerCase() === currentCard.stem?.trim().toLowerCase()
+    const correctMeanings = currentCard.definition.split(";")
+    const isMeaningCorrect = correctMeanings.some((correctAnswer) => checkAnswerWithSuffix(meaningInput, correctAnswer))
+
+    const isStemCorrect = currentCard.stem ? checkAnswerWithSuffix(stemInput, currentCard.stem) : false
     const isGroupCorrect = selectedGroupId === currentCard.group_id
     const isGenderCorrect = selectedGenderId === currentCard.gender_id
 
@@ -129,7 +146,7 @@ export function FlashcardExercise({ set, flashcards, groups, genders }: Flashcar
   if (shuffledCards.length === 0) return <div>Loading...</div>
 
   if (sessionFinished) {
-    const correctCount = sessionResults.filter(r => Object.values(r.feedback).every(f => f === 'correct')).length
+    const correctCount = sessionResults.filter((r) => Object.values(r.feedback).every((f) => f === "correct")).length
     const accuracy = Math.round((correctCount / shuffledCards.length) * 100)
     return (
       <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 py-8">
@@ -149,7 +166,7 @@ export function FlashcardExercise({ set, flashcards, groups, genders }: Flashcar
               <p className="text-muted-foreground">
                 Je had {correctCount} van de {shuffledCards.length} kaarten volledig correct.
               </p>
-              
+
               <FlashcardResultsTable results={sessionResults} groups={groups} genders={genders} />
 
               <div className="flex gap-4 pt-4">

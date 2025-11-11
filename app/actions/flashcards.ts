@@ -143,17 +143,24 @@ export async function importFlashcardsFromCSV(setId: string, csvContent: string)
     const [term, definition, stem, group_name, gender_name, example_sentence] = row.split(",").map(s => s.trim().replace(/"/g, ''))
 
     if (!term || !definition || !stem || !group_name || !gender_name) {
-      throw new Error(`Row ${i + 2}: Missing required fields.`)
+      console.warn(`Skipping incomplete row ${i + 2}: ${row}`)
+      continue
     }
 
-    const groupId = groupMap.get(group_name.toLowerCase())
+    let groupId = groupMap.get(group_name.toLowerCase())
     if (!groupId) {
-      throw new Error(`Row ${i + 2}: Group "${group_name}" not found. Please create it first.`)
+      const { data: newGroup, error: groupError } = await supabase.from("groups").insert({ name: group_name }).select("id").single()
+      if (groupError) throw new Error(`Could not create group "${group_name}": ${groupError.message}`)
+      groupId = newGroup.id
+      groupMap.set(group_name.toLowerCase(), groupId)
     }
 
-    const genderId = genderMap.get(gender_name.toLowerCase())
+    let genderId = genderMap.get(gender_name.toLowerCase())
     if (!genderId) {
-      throw new Error(`Row ${i + 2}: Gender "${gender_name}" not found. Please create it first.`)
+      const { data: newGender, error: genderError } = await supabase.from("genders").insert({ name: gender_name }).select("id").single()
+      if (genderError) throw new Error(`Could not create gender "${gender_name}": ${genderError.message}`)
+      genderId = newGender.id
+      genderMap.set(gender_name.toLowerCase(), genderId)
     }
 
     flashcardsToInsert.push({

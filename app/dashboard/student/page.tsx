@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { BookOpen, FileText, Sparkles, ArrowRight, BrainCircuit, Languages } from "lucide-react"
 import Link from "next/link"
 import { UserNav } from "@/components/student/user-nav"
+import { Badge } from "@/components/ui/badge"
 
 export default async function StudentDashboardPage() {
   const supabase = await createClient()
@@ -91,8 +92,11 @@ export default async function StudentDashboardPage() {
           </Link>
 
           {/* AI Tutor */}
-          <Link href="/dashboard/student/ai-tutor" className="group">
-            <Card className="hover:shadow-lg transition-shadow h-full flex flex-col">
+          <div className="relative">
+            <div className="absolute top-4 right-4 z-10">
+              <Badge variant="destructive">In Development</Badge>
+            </div>
+            <Card className="h-full flex flex-col opacity-60 cursor-not-allowed border-destructive/20">
               <CardHeader>
                 <div className="flex items-center gap-3 mb-2">
                   <div className="h-12 w-12 rounded-lg bg-muted flex items-center justify-center">
@@ -103,17 +107,20 @@ export default async function StudentDashboardPage() {
                 <CardDescription>Ask questions and get personalized practice from your AI assistant, Lumi.</CardDescription>
               </CardHeader>
               <CardContent className="mt-auto">
-                <div className="flex items-center text-sm font-semibold text-foreground">
+                <div className="flex items-center text-sm font-semibold text-muted-foreground">
                   Chat with Lumi
-                  <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                  <ArrowRight className="ml-2 h-4 w-4" />
                 </div>
               </CardContent>
             </Card>
-          </Link>
+          </div>
 
           {/* Translator */}
-          <Link href="/dashboard/student/translator" className="group">
-            <Card className="hover:shadow-lg transition-shadow h-full flex flex-col bg-primary/5 border-primary/20">
+          <div className="relative">
+            <div className="absolute top-4 right-4 z-10">
+              <Badge variant="destructive">In Development</Badge>
+            </div>
+            <Card className="h-full flex flex-col opacity-60 cursor-not-allowed border-destructive/20">
               <CardHeader>
                 <div className="flex items-center gap-3 mb-2">
                   <div className="h-12 w-12 rounded-lg bg-muted flex items-center justify-center">
@@ -124,13 +131,13 @@ export default async function StudentDashboardPage() {
                 <CardDescription>Quickly translate text to Dutch using our AI-powered tool.</CardDescription>
               </CardHeader>
               <CardContent className="mt-auto">
-                <div className="flex items-center text-sm font-semibold text-primary">
+                <div className="flex items-center text-sm font-semibold text-muted-foreground">
                   Open Translator
-                  <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                  <ArrowRight className="ml-2 h-4 w-4" />
                 </div>
               </CardContent>
             </Card>
-          </Link>
+          </div>
         </div>
       </div>
     </div>

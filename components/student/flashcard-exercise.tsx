@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label"
 import { Progress } from "@/components/ui/progress"
 import { ArrowLeft, Check, RotateCcw, ThumbsUp, X } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { FlashcardResultsTable } from "./flashcard-results-table"
 
 interface Flashcard {
   id: string
@@ -37,6 +38,16 @@ interface FlashcardExerciseProps {
 
 type Feedback = "correct" | "incorrect" | "none"
 
+interface CardResult {
+  card: Flashcard
+  feedback: {
+    meaning: Feedback
+    stem: Feedback
+    group: Feedback
+    gender: Feedback
+  }
+}
+
 export function FlashcardExercise({ set, flashcards, groups, genders }: FlashcardExerciseProps) {
   const router = useRouter()
   const [shuffledCards, setShuffledCards] = useState<Flashcard[]>([])
@@ -48,7 +59,7 @@ export function FlashcardExercise({ set, flashcards, groups, genders }: Flashcar
     group: "none" as Feedback,
     gender: "none" as Feedback,
   })
-  const [correctCount, setCorrectCount] = useState(0)
+  const [sessionResults, setSessionResults] = useState<CardResult[]>([])
   const [sessionFinished, setSessionFinished] = useState(false)
 
   // State for student answers
@@ -72,18 +83,17 @@ export function FlashcardExercise({ set, flashcards, groups, genders }: Flashcar
     const isGroupCorrect = selectedGroupId === currentCard.group_id
     const isGenderCorrect = selectedGenderId === currentCard.gender_id
 
-    setFieldFeedback({
-      meaning: isMeaningCorrect ? "correct" : "incorrect",
-      stem: isStemCorrect ? "correct" : "incorrect",
-      group: isGroupCorrect ? "correct" : "incorrect",
-      gender: isGenderCorrect ? "correct" : "incorrect",
-    })
+    const feedback = {
+      meaning: isMeaningCorrect ? "correct" : ("incorrect" as Feedback),
+      stem: isStemCorrect ? "correct" : ("incorrect" as Feedback),
+      group: isGroupCorrect ? "correct" : ("incorrect" as Feedback),
+      gender: isGenderCorrect ? "correct" : ("incorrect" as Feedback),
+    }
 
+    setFieldFeedback(feedback)
     setIsCardChecked(true)
 
-    if (isMeaningCorrect && isStemCorrect && isGroupCorrect && isGenderCorrect) {
-      setCorrectCount((c) => c + 1)
-    }
+    setSessionResults((prev) => [...prev, { card: currentCard, feedback }])
   }
 
   const handleNext = () => {
@@ -105,7 +115,7 @@ export function FlashcardExercise({ set, flashcards, groups, genders }: Flashcar
     setCurrentIndex(0)
     setIsCardChecked(false)
     setFieldFeedback({ meaning: "none", stem: "none", group: "none", gender: "none" })
-    setCorrectCount(0)
+    setSessionResults([])
     setSessionFinished(false)
     setMeaningInput("")
     setStemInput("")
@@ -114,37 +124,45 @@ export function FlashcardExercise({ set, flashcards, groups, genders }: Flashcar
   }
 
   const progress = ((currentIndex + 1) / shuffledCards.length) * 100
-  const isAnythingIncorrect = Object.values(fieldFeedback).some(f => f === 'incorrect');
+  const isAnythingIncorrect = Object.values(fieldFeedback).some((f) => f === "incorrect")
 
   if (shuffledCards.length === 0) return <div>Loading...</div>
 
   if (sessionFinished) {
+    const correctCount = sessionResults.filter(r => Object.values(r.feedback).every(f => f === 'correct')).length
     const accuracy = Math.round((correctCount / shuffledCards.length) * 100)
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-background to-muted/20">
-        <Card className="w-full max-w-md text-center">
-          <CardHeader>
-            <div className="mx-auto mb-4 h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center">
-              <ThumbsUp className="h-8 w-8 text-primary" />
-            </div>
-            <CardTitle className="text-2xl">Set Compleet!</CardTitle>
-            <CardDescription>Je hebt de set &quot;{set.title}&quot; afgerond.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="text-4xl font-bold">{accuracy}%</div>
-            <p className="text-muted-foreground">
-              Je had {correctCount} van de {shuffledCards.length} kaarten volledig correct.
-            </p>
-            <div className="flex gap-4 pt-4">
-              <Button variant="outline" onClick={handleRestart} className="flex-1">
-                <RotateCcw className="h-4 w-4 mr-2" /> Opnieuw Oefenen
-              </Button>
-              <Button onClick={() => router.push("/dashboard/student/word-learning")} className="flex-1">
-                Terug naar Sets
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+      <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 py-8">
+        <div className="container mx-auto max-w-4xl">
+          <Card className="w-full text-center">
+            <CardHeader>
+              <div className="mx-auto mb-4 h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center">
+                <ThumbsUp className="h-8 w-8 text-primary" />
+              </div>
+              <CardTitle className="text-2xl">Set Compleet!</CardTitle>
+              <CardDescription>
+                Je hebt de set &quot;{set.title}&quot; afgerond. Hier is je gedetailleerde overzicht.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="text-4xl font-bold">{accuracy}%</div>
+              <p className="text-muted-foreground">
+                Je had {correctCount} van de {shuffledCards.length} kaarten volledig correct.
+              </p>
+              
+              <FlashcardResultsTable results={sessionResults} groups={groups} genders={genders} />
+
+              <div className="flex gap-4 pt-4">
+                <Button variant="outline" onClick={handleRestart} className="flex-1">
+                  <RotateCcw className="h-4 w-4 mr-2" /> Opnieuw Oefenen
+                </Button>
+                <Button onClick={() => router.push("/dashboard/student/word-learning")} className="flex-1">
+                  Terug naar Sets
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     )
   }
@@ -224,13 +242,17 @@ export function FlashcardExercise({ set, flashcards, groups, genders }: Flashcar
                     onChange={(e) => setMeaningInput(e.target.value)}
                     disabled={isCardChecked}
                     className={cn(isCardChecked && "pr-10", {
-                      "border-green-500 focus-visible:ring-green-500/20": fieldFeedback.meaning === 'correct',
-                      "border-destructive focus-visible:ring-destructive/20": fieldFeedback.meaning === 'incorrect',
+                      "border-green-500 focus-visible:ring-green-500/20": fieldFeedback.meaning === "correct",
+                      "border-destructive focus-visible:ring-destructive/20": fieldFeedback.meaning === "incorrect",
                     })}
                   />
                   {isCardChecked && (
                     <div className="absolute inset-y-0 right-3 top-6 flex items-center">
-                      {fieldFeedback.meaning === 'correct' ? <Check className="h-5 w-5 text-green-500" /> : <X className="h-5 w-5 text-destructive" />}
+                      {fieldFeedback.meaning === "correct" ? (
+                        <Check className="h-5 w-5 text-green-500" />
+                      ) : (
+                        <X className="h-5 w-5 text-destructive" />
+                      )}
                     </div>
                   )}
                 </div>
@@ -242,13 +264,17 @@ export function FlashcardExercise({ set, flashcards, groups, genders }: Flashcar
                     onChange={(e) => setStemInput(e.target.value)}
                     disabled={isCardChecked}
                     className={cn(isCardChecked && "pr-10", {
-                      "border-green-500 focus-visible:ring-green-500/20": fieldFeedback.stem === 'correct',
-                      "border-destructive focus-visible:ring-destructive/20": fieldFeedback.stem === 'incorrect',
+                      "border-green-500 focus-visible:ring-green-500/20": fieldFeedback.stem === "correct",
+                      "border-destructive focus-visible:ring-destructive/20": fieldFeedback.stem === "incorrect",
                     })}
                   />
                   {isCardChecked && (
                     <div className="absolute inset-y-0 right-3 top-6 flex items-center">
-                      {fieldFeedback.stem === 'correct' ? <Check className="h-5 w-5 text-green-500" /> : <X className="h-5 w-5 text-destructive" />}
+                      {fieldFeedback.stem === "correct" ? (
+                        <Check className="h-5 w-5 text-green-500" />
+                      ) : (
+                        <X className="h-5 w-5 text-destructive" />
+                      )}
                     </div>
                   )}
                 </div>
@@ -267,10 +293,18 @@ export function FlashcardExercise({ set, flashcards, groups, genders }: Flashcar
               <div className="p-4 rounded-md bg-muted/50 text-center">
                 <p className="font-semibold mb-2">Juiste antwoorden:</p>
                 <ul className="text-sm space-y-1">
-                  <li><strong>Betekenis:</strong> {currentCard.definition.replace(/;/g, " / ")}</li>
-                  <li><strong>Stam:</strong> {currentCard.stem}</li>
-                  <li><strong>Geslacht:</strong> {genders.find(g => g.id === currentCard.gender_id)?.name}</li>
-                  <li><strong>Groep:</strong> {groups.find(g => g.id === currentCard.group_id)?.name}</li>
+                  <li>
+                    <strong>Betekenis:</strong> {currentCard.definition.replace(/;/g, " / ")}
+                  </li>
+                  <li>
+                    <strong>Stam:</strong> {currentCard.stem}
+                  </li>
+                  <li>
+                    <strong>Geslacht:</strong> {genders.find((g) => g.id === currentCard.gender_id)?.name}
+                  </li>
+                  <li>
+                    <strong>Groep:</strong> {groups.find((g) => g.id === currentCard.group_id)?.name}
+                  </li>
                 </ul>
               </div>
             )}

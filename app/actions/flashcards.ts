@@ -107,3 +107,59 @@ export async function deleteFlashcard(id: string, setId: string) {
   if (error) throw new Error(error.message)
   revalidatePath(`/dashboard/teacher/content/flashcards/${setId}`)
 }
+
+export async function importFlashcardsFromCSV(setId: string, csvContent: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error("Unauthorized")
+  const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single()
+  if (!profile || profile.role !== "teacher") throw new Error("Unauthorized")
+
+  // Fetch all existing groups and genders once to create a lookup map
+  const { data: groups } = await supabase.from("groups").select("id, name")
+  const { data: genders } = await supabase.from("genders").select("id, name")
+  const groupMap = new Map(groups?.map(g => [g.name.toLowerCase(), g.id]))
+  const genderMap = new Map(genders?.map(g => [g.name.toLowerCase(), g.id]))
+
+  const flashcardsToInsert = []
+  const rows = csvContent.split("\n").slice(1) // Skip header row
+
+  for (let i = 0; i < rows.length; i++) {
+    const row = rows[i].trim()
+    if (!row) continue
+
+    const [term, definition, stem, group_name, gender_name, example_sentence] = row.split(",").map(s => s.trim().replace(/"/g, ''))
+
+    if (!term || !definition || !stem || !group_name || !gender_name) {
+      throw new Error(`Row ${i + 2}: Missing required fields.`)
+    }
+
+    const groupId = groupMap.get(group_name.toLowerCase())
+    if (!groupId) {
+      throw new Error(`Row ${i + 2}: Group "${group_name}" not found. Please create it first.`)
+    }
+
+    const genderId = genderMap.get(gender_name.toLowerCase())
+    if (!genderId) {
+      throw new Error(`Row ${i + 2}: Gender "${gender_name}" not found. Please create it first.`)
+    }
+
+    flashcardsToInsert.push({
+      set_id: setId,
+      term,
+      definition,
+      stem,
+      group_id: groupId,
+      gender_id: genderId,
+      example_sentence: example_sentence || null,
+    })
+  }
+
+  if (flashcardsToInsert.length > 0) {
+    const { error } = await supabase.from("flashcards").insert(flashcardsToInsert)
+    if (error) throw new Error(error.message)
+  }
+
+  revalidatePath(`/dashboard/teacher/content/flashcards/${setId}`)
+  return { count: flashcardsToInsert.length }
+}

@@ -6,6 +6,7 @@ import { ArrowLeft } from "lucide-react"
 import Link from "next/link"
 import { FlashcardDialog } from "@/components/teacher/flashcard-dialog"
 import { EditableFlashcardCard } from "@/components/teacher/editable-flashcard-card"
+import { FlashcardImportDialog } from "@/components/teacher/flashcard-import-dialog"
 
 interface FlashcardSetDetailPageProps {
   params: Promise<{ id: string }>
@@ -45,7 +46,10 @@ export default async function FlashcardSetDetailPage({ params }: FlashcardSetDet
               <h1 className="text-2xl font-bold">{set.title}</h1>
               <p className="text-sm text-muted-foreground">{set.description || "Manage the flashcards in this set."}</p>
             </div>
-            <FlashcardDialog setId={setId} groups={groups || []} genders={genders || []} />
+            <div className="flex items-center gap-2">
+              <FlashcardImportDialog setId={setId} />
+              <FlashcardDialog setId={setId} groups={groups || []} genders={genders || []} />
+            </div>
           </div>
         </div>
       </header>

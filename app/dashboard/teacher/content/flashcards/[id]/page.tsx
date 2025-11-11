@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { ArrowLeft, LayoutGrid, List, Trash2 } from "lucide-react"
+import { ArrowLeft, LayoutGrid, List, Trash2, Download } from "lucide-react"
 import Link from "next/link"
 import { FlashcardDialog } from "@/components/teacher/flashcard-dialog"
 import { EditableFlashcardCard } from "@/components/teacher/editable-flashcard-card"
@@ -75,6 +75,46 @@ export default function FlashcardSetDetailPage({ params }: { params: Promise<{ i
     })
   }
 
+  const handleExportCSV = () => {
+    if (selectedIds.length === 0) {
+      toast.error("Selecteer eerst flashcards om te exporteren.")
+      return
+    }
+
+    const cardsToExport = flashcards.filter(f => selectedIds.includes(f.id))
+    
+    const headers = ["term", "definition", "stem", "group_name", "gender_name", "example_sentence"]
+    
+    const escapeCSV = (str: string | null | undefined) => {
+      if (str === null || str === undefined) return '""'
+      const s = String(str)
+      if (s.includes('"') || s.includes(',') || s.includes('\n')) {
+        return `"${s.replace(/"/g, '""')}"`
+      }
+      return s
+    }
+
+    const csvRows = cardsToExport.map(card => {
+      const groupName = card.groups ? card.groups.name : ''
+      const genderName = card.genders ? card.genders.name : ''
+      const row = [card.term, card.definition, card.stem, groupName, genderName, card.example_sentence]
+      return row.map(escapeCSV).join(',')
+    })
+
+    const csvContent = [headers.join(','), ...csvRows].join('\n')
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const link = document.createElement('a')
+    const url = URL.createObjectURL(blob)
+    link.setAttribute('href', url)
+    link.setAttribute('download', `${set.title.replace(/\s+/g, '_')}_export.csv`)
+    link.style.visibility = 'hidden'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    
+    toast.success("Export gestart!", { description: "Je CSV-bestand wordt gedownload." })
+  }
+
   if (loading || !set) {
     return <div>Loading...</div> // Or a proper skeleton loader
   }
@@ -111,26 +151,32 @@ export default function FlashcardSetDetailPage({ params }: { params: Promise<{ i
               </div>
             </div>
             {selectedIds.length > 0 && (
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button variant="destructive" disabled={isPending}>
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    Delete ({selectedIds.length})
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      This will permanently delete {selectedIds.length} flashcard(s). This action cannot be undone.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleBulkDelete} className="bg-destructive hover:bg-destructive/90">Delete</AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
+              <div className="flex items-center gap-2">
+                <Button variant="outline" onClick={handleExportCSV}>
+                  <Download className="h-4 w-4 mr-2" />
+                  Exporteer ({selectedIds.length})
+                </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive" disabled={isPending}>
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Delete ({selectedIds.length})
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This will permanently delete {selectedIds.length} flashcard(s). This action cannot be undone.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleBulkDelete} className="bg-destructive hover:bg-destructive/90">Delete</AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
             )}
           </div>
         </div>

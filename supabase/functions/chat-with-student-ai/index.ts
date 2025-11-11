@@ -1,3 +1,5 @@
+/// <reference types="https://esm.sh/v135/@supabase/functions-js@2.4.1/src/edge-runtime.d.ts" />
+
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0"
 
@@ -6,7 +8,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 }
 
-serve(async (req) => {
+serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders })
   }
@@ -23,7 +25,7 @@ serve(async (req) => {
     let body
     try {
       body = JSON.parse(rawBody)
-    } catch (e) {
+    } catch (e: any) {
       return new Response(JSON.stringify({ error: `Invalid JSON in request body: ${e.message}` }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -89,7 +91,7 @@ serve(async (req) => {
     const studentData = {
       studentName: student.full_name || "Unnamed Student",
       progress:
-        progressData?.map((p) => ({
+        progressData?.map((p: any) => ({
           chapter: p.chapters?.title || "Untitled Chapter",
           accuracy: p.accuracy_percentage,
           completedExercises: p.completed_exercises,
@@ -160,7 +162,7 @@ serve(async (req) => {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     })
-  } catch (error) {
+  } catch (error: any) {
     console.error("Edge function error:", error.message)
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

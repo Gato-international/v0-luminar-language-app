@@ -17,7 +17,7 @@ export default function ExerciseSetupPage() {
   const searchParams = useSearchParams()
   const preSelectedChapterId = searchParams.get("chapterId")
 
-  const [currentStep, setCurrentStep] = useState(preSelectedChapterId ? 1 : 2)
+  const [currentStep, setCurrentStep] = useState(preSelectedChapterId ? 2 : 1)
   const [exerciseType, setExerciseType] = useState<"practice" | "test" | "challenge">("practice")
   const [selectedChapterId, setSelectedChapterId] = useState<string>(preSelectedChapterId || "")
   const [difficulty, setDifficulty] = useState<"easy" | "medium" | "hard">("medium")
@@ -84,7 +84,7 @@ export default function ExerciseSetupPage() {
   }
 
   const canProceed = () => {
-    if (currentStep === 1) return exerciseType !== ""
+    if (currentStep === 1) return true
     if (currentStep === 2) return selectedChapterId !== ""
     if (currentStep === 3) return questionCount > 0
     return false

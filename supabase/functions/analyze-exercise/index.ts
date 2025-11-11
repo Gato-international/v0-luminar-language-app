@@ -1,3 +1,5 @@
+/// <reference types="https://esm.sh/v135/@supabase/functions-js@2.4.1/src/edge-runtime.d.ts" />
+
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0"
 
@@ -6,7 +8,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 }
 
-serve(async (req) => {
+serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders })
   }
@@ -39,8 +41,8 @@ serve(async (req) => {
     if (casesError) throw new Error(`Could not fetch cases: ${casesError.message}`)
 
     // Process data for the prompt
-    const caseMap = new Map(cases.map((c) => [c.id, c.name]))
-    const performanceByCase = attempts.reduce((acc, attempt) => {
+    const caseMap = new Map(cases.map((c: { id: string; name: string }) => [c.id, c.name]))
+    const performanceByCase = attempts.reduce((acc: Record<string, { correct: number, total: number }>, attempt: { correct_case_id: string, is_correct: boolean }) => {
       const caseName = caseMap.get(attempt.correct_case_id) || "Unknown Case"
       if (!acc[caseName]) {
         acc[caseName] = { correct: 0, total: 0 }
@@ -55,7 +57,7 @@ serve(async (req) => {
     const analysisData = {
       chapter: exercise.chapters?.title,
       difficulty: exercise.difficulty,
-      overallAccuracy: (attempts.filter((a) => a.is_correct).length / attempts.length) * 100,
+      overallAccuracy: (attempts.filter((a: { is_correct: boolean }) => a.is_correct).length / attempts.length) * 100,
       performanceByCase,
     }
 
@@ -111,7 +113,7 @@ serve(async (req) => {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
     })
-  } catch (error) {
+  } catch (error: any) {
     return new Response(JSON.stringify({ error: error.message }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,

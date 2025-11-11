@@ -15,6 +15,7 @@ interface FlashcardSetCardProps {
     created_at: string
     title: string
     description: string | null
+    chapter_id: string | null
     chapters: { title: string } | null
     flashcards: { count: number }[]
   }

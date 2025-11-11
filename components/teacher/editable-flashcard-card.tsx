@@ -14,6 +14,7 @@ import { Pencil } from "lucide-react"
 import { updateFlashcard, deleteFlashcard } from "@/app/actions/flashcards"
 import { DeleteDialog } from "@/components/teacher/delete-dialog"
 import { Badge } from "@/components/ui/badge"
+import { Checkbox } from "@/components/ui/checkbox"
 
 interface EditableFlashcardCardProps {
   flashcard: {
@@ -30,9 +31,11 @@ interface EditableFlashcardCardProps {
   setId: string
   groups: Array<{ id: string; name: string }>
   genders: Array<{ id: string; name: string }>
+  isSelected: boolean
+  onSelectChange: (id: string, checked: boolean) => void
 }
 
-export function EditableFlashcardCard({ flashcard, setId, groups, genders }: EditableFlashcardCardProps) {
+export function EditableFlashcardCard({ flashcard, setId, groups, genders, isSelected, onSelectChange }: EditableFlashcardCardProps) {
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const router = useRouter()
@@ -63,76 +66,85 @@ export function EditableFlashcardCard({ flashcard, setId, groups, genders }: Edi
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Card className="flex flex-col hover:shadow-lg transition-shadow cursor-pointer relative group">
-          <CardHeader>
-            <div className="flex items-start justify-between">
-              <CardTitle className="text-lg">{flashcard.term}</CardTitle>
-              <div className="absolute top-2 right-2 flex items-center opacity-0 group-hover:opacity-100 transition-opacity" onClick={(e) => e.stopPropagation()}>
-                <DeleteDialog id={flashcard.id} type="flashcard" onDelete={async () => deleteFlashcard(flashcard.id, setId)} />
+    <div className="relative">
+      <div className="absolute top-2 left-2 z-10" onClick={(e) => e.stopPropagation()}>
+        <Checkbox
+          checked={isSelected}
+          onCheckedChange={(checked) => onSelectChange(flashcard.id, !!checked)}
+          aria-label={`Select flashcard ${flashcard.term}`}
+        />
+      </div>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogTrigger asChild>
+          <Card className="flex flex-col hover:shadow-lg transition-shadow cursor-pointer relative group h-full">
+            <CardHeader>
+              <div className="flex items-start justify-between">
+                <CardTitle className="text-lg">{flashcard.term}</CardTitle>
+                <div className="absolute top-2 right-2 flex items-center opacity-0 group-hover:opacity-100 transition-opacity" onClick={(e) => e.stopPropagation()}>
+                  <DeleteDialog id={flashcard.id} type="flashcard" onDelete={async () => deleteFlashcard(flashcard.id, setId)} />
+                </div>
               </div>
+              <CardDescription>{flashcard.definition.replace(/;/g, ", ")}</CardDescription>
+            </CardHeader>
+            <CardContent className="mt-auto space-y-2">
+              <div className="flex flex-wrap gap-2">
+                {flashcard.groups && <Badge variant="outline">{flashcard.groups.name}</Badge>}
+                {flashcard.genders && <Badge variant="outline">{flashcard.genders.name}</Badge>}
+              </div>
+              {flashcard.example_sentence && <p className="text-sm text-muted-foreground italic">&quot;{flashcard.example_sentence}&quot;</p>}
+            </CardContent>
+            <div className="absolute bottom-2 right-2 flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
+              <Pencil className="h-4 w-4 text-muted-foreground" />
             </div>
-            <CardDescription>{flashcard.definition.replace(/;/g, ", ")}</CardDescription>
-          </CardHeader>
-          <CardContent className="mt-auto space-y-2">
-            <div className="flex flex-wrap gap-2">
-              {flashcard.groups && <Badge variant="outline">{flashcard.groups.name}</Badge>}
-              {flashcard.genders && <Badge variant="outline">{flashcard.genders.name}</Badge>}
-            </div>
-            {flashcard.example_sentence && <p className="text-sm text-muted-foreground italic">&quot;{flashcard.example_sentence}&quot;</p>}
-          </CardContent>
-          <div className="absolute bottom-2 right-2 flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
-            <Pencil className="h-4 w-4 text-muted-foreground" />
-          </div>
-        </Card>
-      </DialogTrigger>
-      <DialogContent className="max-h-[90vh] overflow-y-auto">
-        <form onSubmit={handleSubmit}>
-          <DialogHeader>
-            <DialogTitle>Flashcard Bewerken</DialogTitle>
-            <DialogDescription>Werk de details van deze flashcard bij.</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="term">Woord</Label>
-              <Input id="term" name="term" defaultValue={flashcard.term} required />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="definition">Betekenis</Label>
-              <Input id="definition" name="definition" defaultValue={flashcard.definition} required />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="stem">Stam</Label>
-              <Input id="stem" name="stem" defaultValue={flashcard.stem || ""} required />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
+          </Card>
+        </DialogTrigger>
+        <DialogContent className="max-h-[90vh] overflow-y-auto">
+          <form onSubmit={handleSubmit}>
+            <DialogHeader>
+              <DialogTitle>Flashcard Bewerken</DialogTitle>
+              <DialogDescription>Werk de details van deze flashcard bij.</DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
               <div className="space-y-2">
-                <Label htmlFor="group_id">Groep</Label>
-                <Select name="group_id" defaultValue={flashcard.group_id || ""} required>
-                  <SelectTrigger><SelectValue placeholder="Kies een groep" /></SelectTrigger>
-                  <SelectContent>{groups.map(g => <SelectItem key={g.id} value={g.id}>{g.name}</SelectItem>)}</SelectContent>
-                </Select>
+                <Label htmlFor="term">Woord</Label>
+                <Input id="term" name="term" defaultValue={flashcard.term} required />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="gender_id">Geslacht</Label>
-                <Select name="gender_id" defaultValue={flashcard.gender_id || ""} required>
-                  <SelectTrigger><SelectValue placeholder="Kies een geslacht" /></SelectTrigger>
-                  <SelectContent>{genders.map(g => <SelectItem key={g.id} value={g.id}>{g.name}</SelectItem>)}</SelectContent>
-                </Select>
+                <Label htmlFor="definition">Betekenis</Label>
+                <Input id="definition" name="definition" defaultValue={flashcard.definition} required />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="stem">Stam</Label>
+                <Input id="stem" name="stem" defaultValue={flashcard.stem || ""} required />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="group_id">Groep</Label>
+                  <Select name="group_id" defaultValue={flashcard.group_id || ""} required>
+                    <SelectTrigger><SelectValue placeholder="Kies een groep" /></SelectTrigger>
+                    <SelectContent>{groups.map(g => <SelectItem key={g.id} value={g.id}>{g.name}</SelectItem>)}</SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="gender_id">Geslacht</Label>
+                  <Select name="gender_id" defaultValue={flashcard.gender_id || ""} required>
+                    <SelectTrigger><SelectValue placeholder="Kies een geslacht" /></SelectTrigger>
+                    <SelectContent>{genders.map(g => <SelectItem key={g.id} value={g.id}>{g.name}</SelectItem>)}</SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="example_sentence">Voorbeeldzin (Optioneel)</Label>
+                <Textarea id="example_sentence" name="example_sentence" defaultValue={flashcard.example_sentence || ""} rows={3} />
               </div>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="example_sentence">Voorbeeldzin (Optioneel)</Label>
-              <Textarea id="example_sentence" name="example_sentence" defaultValue={flashcard.example_sentence || ""} rows={3} />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={loading}>Annuleren</Button>
-            <Button type="submit" disabled={loading}>{loading ? "Opslaan..." : "Bijwerken"}</Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={loading}>Annuleren</Button>
+              <Button type="submit" disabled={loading}>{loading ? "Opslaan..." : "Bijwerken"}</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+    </div>
   )
 }

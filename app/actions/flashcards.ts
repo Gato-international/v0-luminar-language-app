@@ -108,6 +108,18 @@ export async function deleteFlashcard(id: string, setId: string) {
   revalidatePath(`/dashboard/teacher/content/flashcards/${setId}`)
 }
 
+export async function bulkDeleteFlashcards(ids: string[], setId: string) {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) throw new Error("Unauthorized")
+    const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single()
+    if (!profile || profile.role !== "teacher") throw new Error("Unauthorized")
+
+    const { error } = await supabase.from("flashcards").delete().in("id", ids)
+    if (error) throw new Error(error.message)
+    revalidatePath(`/dashboard/teacher/content/flashcards/${setId}`)
+}
+
 export async function importFlashcardsFromCSV(setId: string, csvContent: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()

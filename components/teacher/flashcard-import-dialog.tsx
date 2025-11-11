@@ -38,6 +38,19 @@ export function FlashcardImportDialog({ setId }: FlashcardImportDialogProps) {
     reader.onload = async (e) => {
       const content = e.target?.result as string
       try {
+        // Client-side validation of the CSV header
+        const lines = content.split("\n")
+        if (lines.length < 1) {
+          throw new Error("CSV file is empty.")
+        }
+        const header = lines[0].trim().split(",").map(h => h.trim().replace(/"/g, ''))
+        const expectedHeaders = ["term", "definition", "stem", "group_name", "gender_name", "example_sentence"]
+
+        if (header.length !== expectedHeaders.length || !expectedHeaders.every((h, i) => h === header[i])) {
+          throw new Error(`Invalid CSV headers. Expected: ${expectedHeaders.join(", ")}`)
+        }
+
+        // If validation passes, call the server action
         const result = await importFlashcardsFromCSV(setId, content)
         toast.success(`${result.count} flashcards have been successfully imported.`)
         setOpen(false)

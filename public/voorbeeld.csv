@@ -1,5 +1,6 @@
 term,definition,stem,group_name,gender_name,example_sentence
-de auto,"the car;the automobile",auto,Groep 1,Mannelijk,"De auto is rood."
-het huis,the house,huis,Groep 2,Onzijdig,"Het huis is groot."
-de fiets,the bike,fiets,Groep 1,Mannelijk,"Ik ga met de fiets naar school."
-de tafel,the table,tafel,Groep 1,Vrouwelijk,
+"de man","the man;man","man","Groep 1","Mannelijk","De man loopt op straat."
+"het boek","the book;book","boek","Groep 2","Onzijdig","Ik lees het boek."
+"de vrouw","the woman;woman","vrouw","Groep 1","Vrouwelijk","De vrouw fietst naar haar werk."
+"de tafel","the table;table","tafel","Groep 3","Vrouwelijk","De kat zit op de tafel."
+"het huis","the house;house","huis","Groep 2","Onzijdig","Het huis is groot."

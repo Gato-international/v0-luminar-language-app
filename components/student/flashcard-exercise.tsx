@@ -41,7 +41,13 @@ export function FlashcardExercise({ set, flashcards, groups, genders }: Flashcar
   const router = useRouter()
   const [shuffledCards, setShuffledCards] = useState<Flashcard[]>([])
   const [currentIndex, setCurrentIndex] = useState(0)
-  const [feedback, setFeedback] = useState<Feedback>("none")
+  const [isCardChecked, setIsCardChecked] = useState(false)
+  const [fieldFeedback, setFieldFeedback] = useState({
+    meaning: "none" as Feedback,
+    stem: "none" as Feedback,
+    group: "none" as Feedback,
+    gender: "none" as Feedback,
+  })
   const [correctCount, setCorrectCount] = useState(0)
   const [sessionFinished, setSessionFinished] = useState(false)
 
@@ -62,23 +68,29 @@ export function FlashcardExercise({ set, flashcards, groups, genders }: Flashcar
 
     const correctMeanings = currentCard.definition.split(";").map((m) => m.trim().toLowerCase())
     const isMeaningCorrect = correctMeanings.includes(meaningInput.trim().toLowerCase())
-
     const isStemCorrect = stemInput.trim().toLowerCase() === currentCard.stem?.trim().toLowerCase()
     const isGroupCorrect = selectedGroupId === currentCard.group_id
     const isGenderCorrect = selectedGenderId === currentCard.gender_id
 
+    setFieldFeedback({
+      meaning: isMeaningCorrect ? "correct" : "incorrect",
+      stem: isStemCorrect ? "correct" : "incorrect",
+      group: isGroupCorrect ? "correct" : "incorrect",
+      gender: isGenderCorrect ? "correct" : "incorrect",
+    })
+
+    setIsCardChecked(true)
+
     if (isMeaningCorrect && isStemCorrect && isGroupCorrect && isGenderCorrect) {
-      setFeedback("correct")
       setCorrectCount((c) => c + 1)
-    } else {
-      setFeedback("incorrect")
     }
   }
 
   const handleNext = () => {
     if (currentIndex < shuffledCards.length - 1) {
       setCurrentIndex((i) => i + 1)
-      setFeedback("none")
+      setIsCardChecked(false)
+      setFieldFeedback({ meaning: "none", stem: "none", group: "none", gender: "none" })
       setMeaningInput("")
       setStemInput("")
       setSelectedGroupId("")
@@ -91,7 +103,8 @@ export function FlashcardExercise({ set, flashcards, groups, genders }: Flashcar
   const handleRestart = () => {
     setShuffledCards([...flashcards].sort(() => Math.random() - 0.5))
     setCurrentIndex(0)
-    setFeedback("none")
+    setIsCardChecked(false)
+    setFieldFeedback({ meaning: "none", stem: "none", group: "none", gender: "none" })
     setCorrectCount(0)
     setSessionFinished(false)
     setMeaningInput("")
@@ -100,7 +113,8 @@ export function FlashcardExercise({ set, flashcards, groups, genders }: Flashcar
     setSelectedGenderId("")
   }
 
-  const progress = (currentIndex / shuffledCards.length) * 100
+  const progress = ((currentIndex + 1) / shuffledCards.length) * 100
+  const isAnythingIncorrect = Object.values(fieldFeedback).some(f => f === 'incorrect');
 
   if (shuffledCards.length === 0) return <div>Loading...</div>
 
@@ -119,7 +133,7 @@ export function FlashcardExercise({ set, flashcards, groups, genders }: Flashcar
           <CardContent className="space-y-4">
             <div className="text-4xl font-bold">{accuracy}%</div>
             <p className="text-muted-foreground">
-              Je had {correctCount} van de {shuffledCards.length} woorden correct.
+              Je had {correctCount} van de {shuffledCards.length} kaarten volledig correct.
             </p>
             <div className="flex gap-4 pt-4">
               <Button variant="outline" onClick={handleRestart} className="flex-1">
@@ -154,13 +168,7 @@ export function FlashcardExercise({ set, flashcards, groups, genders }: Flashcar
         </div>
       </header>
       <main className="container mx-auto px-4 py-8 max-w-3xl">
-        <Card
-          className={cn(
-            "transition-all",
-            feedback === "correct" && "border-green-500",
-            feedback === "incorrect" && "border-destructive",
-          )}
-        >
+        <Card>
           <CardContent className="p-8 space-y-6">
             <div className="text-center">
               <p className="text-sm text-muted-foreground">WOORD</p>
@@ -175,7 +183,11 @@ export function FlashcardExercise({ set, flashcards, groups, genders }: Flashcar
                       key={g.id}
                       variant={selectedGenderId === g.id ? "default" : "outline"}
                       onClick={() => setSelectedGenderId(g.id)}
-                      disabled={feedback !== "none"}
+                      disabled={isCardChecked}
+                      className={cn(isCardChecked && "border-2", {
+                        "border-green-500": isCardChecked && g.id === currentCard.gender_id,
+                        "border-destructive": isCardChecked && selectedGenderId === g.id && g.id !== currentCard.gender_id,
+                      })}
                     >
                       {g.name}
                     </Button>
@@ -191,7 +203,11 @@ export function FlashcardExercise({ set, flashcards, groups, genders }: Flashcar
                       key={g.id}
                       variant={selectedGroupId === g.id ? "default" : "outline"}
                       onClick={() => setSelectedGroupId(g.id)}
-                      disabled={feedback !== "none"}
+                      disabled={isCardChecked}
+                      className={cn(isCardChecked && "border-2", {
+                        "border-green-500": isCardChecked && g.id === currentCard.group_id,
+                        "border-destructive": isCardChecked && selectedGroupId === g.id && g.id !== currentCard.group_id,
+                      })}
                     >
                       {g.name}
                     </Button>
@@ -200,52 +216,62 @@ export function FlashcardExercise({ set, flashcards, groups, genders }: Flashcar
               </div>
 
               <div className="space-y-4">
-                <div>
+                <div className="relative">
                   <Label htmlFor="meaning">Betekenis</Label>
                   <Input
                     id="meaning"
                     value={meaningInput}
                     onChange={(e) => setMeaningInput(e.target.value)}
-                    disabled={feedback !== "none"}
+                    disabled={isCardChecked}
+                    className={cn(isCardChecked && "pr-10", {
+                      "border-green-500 focus-visible:ring-green-500/20": fieldFeedback.meaning === 'correct',
+                      "border-destructive focus-visible:ring-destructive/20": fieldFeedback.meaning === 'incorrect',
+                    })}
                   />
+                  {isCardChecked && (
+                    <div className="absolute inset-y-0 right-3 top-6 flex items-center">
+                      {fieldFeedback.meaning === 'correct' ? <Check className="h-5 w-5 text-green-500" /> : <X className="h-5 w-5 text-destructive" />}
+                    </div>
+                  )}
                 </div>
-                <div>
+                <div className="relative">
                   <Label htmlFor="stem">Stam</Label>
                   <Input
                     id="stem"
                     value={stemInput}
                     onChange={(e) => setStemInput(e.target.value)}
-                    disabled={feedback !== "none"}
+                    disabled={isCardChecked}
+                    className={cn(isCardChecked && "pr-10", {
+                      "border-green-500 focus-visible:ring-green-500/20": fieldFeedback.stem === 'correct',
+                      "border-destructive focus-visible:ring-destructive/20": fieldFeedback.stem === 'incorrect',
+                    })}
                   />
+                  {isCardChecked && (
+                    <div className="absolute inset-y-0 right-3 top-6 flex items-center">
+                      {fieldFeedback.stem === 'correct' ? <Check className="h-5 w-5 text-green-500" /> : <X className="h-5 w-5 text-destructive" />}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
-            {feedback === "none" ? (
-              <Button onClick={handleCheck} className="w-full">
-                Controleer Antwoord
-              </Button>
-            ) : (
+            {isCardChecked ? (
               <Button onClick={handleNext} className="w-full">
                 Volgende Kaart
               </Button>
+            ) : (
+              <Button onClick={handleCheck} className="w-full">
+                Controleer Antwoord
+              </Button>
             )}
-            {feedback !== "none" && (
-              <div
-                className={cn(
-                  "p-4 rounded-md text-center",
-                  feedback === "correct" ? "bg-green-500/10 text-green-700" : "bg-destructive/10 text-destructive",
-                )}
-              >
-                <div className="flex items-center justify-center gap-2 font-semibold mb-2">
-                  {feedback === "correct" ? <Check className="h-5 w-5" /> : <X className="h-5 w-5" />}
-                  <span>{feedback === "correct" ? "Correct!" : "Incorrect"}</span>
-                </div>
-                {feedback === "incorrect" && (
-                  <p className="text-sm">
-                    Het juiste antwoord is: <strong>{currentCard.definition.replace(/;/g, " / ")}</strong> (Stam:{" "}
-                    {currentCard.stem})
-                  </p>
-                )}
+            {isCardChecked && isAnythingIncorrect && (
+              <div className="p-4 rounded-md bg-muted/50 text-center">
+                <p className="font-semibold mb-2">Juiste antwoorden:</p>
+                <ul className="text-sm space-y-1">
+                  <li><strong>Betekenis:</strong> {currentCard.definition.replace(/;/g, " / ")}</li>
+                  <li><strong>Stam:</strong> {currentCard.stem}</li>
+                  <li><strong>Geslacht:</strong> {genders.find(g => g.id === currentCard.gender_id)?.name}</li>
+                  <li><strong>Groep:</strong> {groups.find(g => g.id === currentCard.group_id)?.name}</li>
+                </ul>
               </div>
             )}
           </CardContent>

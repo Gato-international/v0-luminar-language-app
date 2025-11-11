@@ -1,0 +1,182 @@
+﻿term,definition,stem,group_name,gender_name,example_sentence
+res,"zaak; ding, iets, onvertaald",re,5,V,V
+animus,geest; moed,anim,2,V,V
+rex,koning,reg,3,V,V
+locus,plaats,loc,2,V,V
+deus,god,de,2,V,V
+pars,deel,part,3,V,V
+dies,dag,die,5,V,V
+manus,hand; groep,man,4,V,V
+homo,"man, mens",homin,3,V,V
+hostis,vijand,host,3,V,V
+corpus,lichaam,corpor,3,V,V
+vita,leven,vit,1,V,V
+bellum,oorlog,bell,2,V,V
+urbs,stad,urb,3,V,V
+tempus,tijd,tempor,3,V,V
+virtus,moed; kwaliteit,virtut,3,V,V
+pater,vader,patr,3,V,V
+vir,man,vir,2,V,V
+causa,(oor)zaak; (rechts)zaak,caus,1,V,V
+domus,huis,dom,4,V,V
+vis,kracht; macht,vis,3,V,V
+mors,dood,mort,3,V,V
+bonum,"het goede, iets goeds",bon,2,V,V
+malum,"het slechte, ramp",mal,2,V,V
+terra,"aarde, land",terr,1,V,V
+fortuna,lot; (on)geluk,fortun,1,V,V
+arma,wapens,arm,2,V,V
+beneficium,weldaad,benefic,2,V,V
+miles,soldaat,milit,3,V,V
+populus,volk,popul,2,V,V
+natura,natuur,natur,1,V,V
+nomen,naam,nomin,3,V,V
+mare,zee,mar,3,V,V
+consilium,"plan, besluit, advies",consili,2,V,V
+imperium,opdracht; macht; rijk,imperi,2,V,V
+annus,jaar,ann,2,V,V
+castra,(leger)kamp,castr,2,V,V
+mos,gewoonte,mor,3,V,V
+modus,maat; wijze,mod,2,V,V
+nox,nacht,noct,3,V,V
+exercitus,leger,exercit,4,V,V
+genus,"afkomst, soort",gener,3,V,V
+caput,"hoofd, kop",capit,3,V,V
+regnum,"koningschap, macht, rijk",regn-,2,V,V
+ratio,"berekening, verstand, manier",ration,3,V,V
+ira,woede,ir,1,V,V
+fides,"trouw, vertrouwen",fid,5,V,V
+gens,volk; geslacht,gent,3,V,V
+vox,"stem, woord",voc,3,V,V
+caelum,hemel,caelo,2,V,V
+amicus,vriend,amic,2,V,V
+periculum,gevaar,pericul,2,V,V
+spes,hoop,spe,5,V,V
+verbum,woord,ver,2,V,V
+metus,angst,metu,4,V,V
+mater,moeder,matr,3,V,V
+dolor,pijn; verdriet,dolor,3,V,V
+amor,liefde,amor,3,V,V
+mens,verstand,ment,3,V,V
+iter,reis; weg; route,itiner,3,V,V
+scelus,misdaad,scel,3,V,V
+finis,grens; (plur.) gebied,fin,3,V,V
+eques,ruiter; ridder(stand),equit,3,V,V
+princeps,"leider, eerste, vorst",princip,3,V,V
+respublica,staat,respublic,5,V,V
+senatus,senaat(svergadering),senat,4,V,V
+ignis,vuur,ign,3,V,V
+oculus,oog,ocul,2,V,V
+cura,zorg,cur,1,V,V
+civitas,"staat, burgers",civit,3,V,V
+consul,consul,consul,3,V,V
+dux,"leider, aanvoerder",duc,3,V,V
+os,"mond, gezicht",oss,3,V,V
+labor,"inspanning, zware arbeid",labor,3,V,V
+lex,"wet, voorschrift",leg,3,V,V
+copia,"voorraad, troepen",cop,1,V,V
+legio,legioen,leg,3,V,V
+pes,voet,ped,3,V,V
+ars,"handwerk, kunst",art,3,V,V
+filius,zoon,fili,2,V,V
+signum,"teken, beeld",sign,2,V,V
+parens,ouder(s),parent,3,V,V
+via,"weg, reis",vi,1,V,V
+vitium,"gebrek, fout",viti,2,V,V
+honor,"eer, ere-ambt",honor,3,V,V
+poena,"straf, boete",poen,1,V,V
+frater,broer,fratr,3,V,V
+fama,"gerucht, reputatie",fam,1,V,V
+iniuria,onrecht,iniuri,1,V,V
+fatum,(nood)lot,fat,2,V,V
+aetas,"leeftijd, tijdperk",aet,3,V,V
+gratia,"charme, gunst, dank",grat,1,V,V
+voluptas,"genot, (wel)lust",voluptat,3,V,V
+sanguis,bloed,sanguin,3,V,V
+equus,paard,equ,2,V,V
+vultus,gezicht,vult,4,V,V
+proelium,gevecht,proeli,2,V,V
+opus,"1. werk, arbeid, bouwwerk 2. (opus est + abl.) het is nodig",oper,3,V,V
+mons,berg,mont,3,V,V
+numerus,"getal, aantal",numer,2,V,V
+ius,recht,iur,3,V,V
+pectus,borst; hart,pector,3,V,V
+sapiens,"wijze, wijs",sapient,3,V,V
+telum,wapen; projectiel,tel,2,V,V
+puer,jongen; slaaf,puer,2,V,V
+aqua,water,aqu,1,V,V
+flumen,rivier,flumin,3,V,V
+legatus,gezant; onderbevelhebber,legat,2,V,V
+ingenium,karakter; talent,ingen,2,V,V
+ops,"macht: hulp, bezit, troepen",op,3,V,V
+gloria,"roem, eer",glori,1,V,V
+agmen,"groep, (leger)kolonne",agmin,3,V,V
+ferrum,"ijzer, zwaard",ferr,2,V,V
+coniunx,"echtgenoot, echtgenote",coniug,3,V,V
+liberi,kinderen,liber,2,V,V
+navis,schip,nav,3,V,V
+silva,bos,silv,1,V,V
+impetus,"vaart, aanval",impet,4,V,V
+ager,"akker, land",agr,2,V,V
+studium,"ijver, studie",studi,2,V,V
+usus,"gebruik, nut",us,4,V,V
+acies,"scherpte, slaglinie",aci,5,V,V
+vulnus,"wond, verdriet, steek",vulner,3,V,V
+fuga,vlucht,fug,1,V,V
+munus,"taak, geschenk",muner,3,V,V
+pecunia,geld,pecuni,1,V,V
+libertas,vrijheid,libert,3,V,V
+pax,vrede,pac,3,V,V
+casus,"val, toeval, ongeval",cas,4,V,V
+civis,burger,civ,3,V,V
+lux,"licht, leven, inzicht",luc,3,V,V
+ordo,"rij, rang, orde",ordin,3,V,V
+sol,zon,sol,2,V,V
+iuvenis,jongeman,iuven,3,V,V
+spatium,"ruimte, afstand, duur",spati,2,V,V
+unda,golf,und,1,V,V
+animal,"dier, levend wezen",anim,3,V,V
+litus,"kust, strand",lit,3,V,V
+patria,"vaderland, vaderstad",patri,1,V,V
+aurum,goud,aur,2,V,V
+servus,slaaf,serv,2,V,V
+carmen,"spreuk, gedicht, lied",carmen,3,V,V
+turba,wanorde; menigte,turb,1,V,V
+victor,(over)winnaar,vict,3,V,V
+cursus,"rennen, vaart, koers",curs,4,V,V
+exemplum,voorbeeld,exempl,2,V,V
+provincia,(bestuur over) provincie,provinci,1,V,V
+sententia,"mening, plan, uitspraak",sentent,1,V,V
+praesidium,"bescherming, troepen",praesidi,2,V,V
+saxum,"rots(blok), gesteente",sax,2,V,V
+verus,"correct, waar",ver,2,V,V
+memoria,"herinnering, geheugen",memori,1,V,V
+mundus,wereld,mund,2,V,V
+salus,"redding, geluk, gezondheid",salut,3,V,V
+auxilium,"hulp, bijstand (plur.) hulptroepen",auxili,2,V,V
+ventus,wind,vent,4,V,V
+species,"aanblik, uiterlijk",speci,5,V,V
+auris,oor,aur,3,V,V
+umbra,"schaduw, schim",umbr,1,V,V
+caedes,"moord, bloedbad",caed,3,V,V
+ceteri,"overigen, overige mensen",ceter,2,V,V
+magnitudo,grootte,magnitud,3,V,V
+dominus,"heer, baas",domin,2,V,V
+regio,"gebied, streek, richting",regi,3,V,V
+socius,"bondgenoot, makker",soci,2,V,V
+votum,"gelofte, wens",vot,2,V,V
+plebs,"burgerij, volk",pleb,3,V,V
+orbis,"cirkel, schijf",orb,3,V,V
+puella,meisje,puell,1,V,V
+oppidum,stad,oppid,2,V,V
+sermo,gesprek,serm,3,V,V
+iugum,juk; bergrug,iug,2,V,V
+lacrima,traan,lacrim,1,V,V
+latus,"zijkant, flank",lat,3,V,V
+officium,"taak, plicht",offici,2,V,V
+murus,muur,mur,2,V,V
+odium,haat,odi,2,V,V
+forma,"vorm, schoonheid",form,1,V,V
+auctor,"initiatiefnemer, stichter, schrijver",auct,3,V,V
+amicitia,vriendschap,amicit,1,V,V
+amnis,rivier(tje),amn,3,V,V

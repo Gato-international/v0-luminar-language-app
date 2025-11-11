@@ -22,20 +22,20 @@ export function FlashcardResultsTable({ results, groups, genders }: ResultsTable
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="font-semibold">Onderdeel</TableHead>
-            {results.map((result) => (
-              <TableHead key={result.card.id} className="text-center font-semibold">
-                {result.card.term}
+            <TableHead className="font-semibold">Woord</TableHead>
+            {fields.map((field) => (
+              <TableHead key={field.key} className="text-center font-semibold">
+                {field.label}
               </TableHead>
             ))}
           </TableRow>
         </TableHeader>
         <TableBody>
-          {fields.map((field) => (
-            <TableRow key={field.key}>
-              <TableCell className="font-medium">{field.label}</TableCell>
-              {results.map((result) => (
-                <TableCell key={result.card.id} className="text-center">
+          {results.map((result) => (
+            <TableRow key={result.card.id}>
+              <TableCell className="font-medium">{result.card.term}</TableCell>
+              {fields.map((field) => (
+                <TableCell key={field.key} className="text-center">
                   <div className="flex justify-center">
                     {result.feedback[field.key] === "correct" ? (
                       <CheckCircle2 className="h-5 w-5 text-green-500" />

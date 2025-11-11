@@ -29,7 +29,7 @@ export function FlashcardImportDialog({ setId }: FlashcardImportDialogProps) {
 
   const handleSubmit = async () => {
     if (!file) {
-      toast.error("Please select a file to import.")
+      toast.error("Selecteer een bestand om te importeren.")
       return
     }
     setLoading(true)
@@ -41,23 +41,23 @@ export function FlashcardImportDialog({ setId }: FlashcardImportDialogProps) {
         // Client-side validation of the CSV header
         const lines = content.split("\n")
         if (lines.length < 1) {
-          throw new Error("CSV file is empty.")
+          throw new Error("CSV-bestand is leeg.")
         }
         const header = lines[0].trim().split(",").map(h => h.trim().replace(/"/g, ''))
         const expectedHeaders = ["term", "definition", "stem", "group_name", "gender_name", "example_sentence"]
 
         if (header.length !== expectedHeaders.length || !expectedHeaders.every((h, i) => h === header[i])) {
-          throw new Error(`Invalid CSV headers. Expected: ${expectedHeaders.join(", ")}`)
+          throw new Error(`Ongeldige CSV-headers. Verwacht: ${expectedHeaders.join(", ")}`)
         }
 
         // If validation passes, call the server action
         const result = await importFlashcardsFromCSV(setId, content)
-        toast.success(`${result.count} flashcards have been successfully imported.`)
+        toast.success(`${result.count} flashcards zijn succesvol geïmporteerd.`)
         setOpen(false)
         setFile(null)
         router.refresh()
       } catch (error: any) {
-        toast.error("Import Failed", { description: error.message })
+        toast.error("Importeren Mislukt", { description: error.message })
       } finally {
         setLoading(false)
       }
@@ -70,34 +70,34 @@ export function FlashcardImportDialog({ setId }: FlashcardImportDialogProps) {
       <DialogTrigger asChild>
         <Button variant="outline">
           <Upload className="h-4 w-4 mr-2" />
-          Import CSV
+          Importeer CSV
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Import Flashcards from CSV</DialogTitle>
+          <DialogTitle>Flashcards Importeren via CSV</DialogTitle>
           <DialogDescription>
-            Upload a CSV file to add multiple flashcards to this set at once. Make sure your file follows the correct format.
+            Upload een CSV-bestand om meerdere flashcards tegelijk aan deze set toe te voegen. Zorg ervoor dat je bestand de juiste indeling heeft.
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4 py-4">
           <div className="space-y-2">
-            <Label htmlFor="file">CSV File</Label>
+            <Label htmlFor="file">CSV-bestand</Label>
             <Input id="file" type="file" accept=".csv" onChange={handleFileChange} />
           </div>
           <p className="text-sm text-muted-foreground">
-            Don&apos;t have a template?{" "}
+            Heb je geen sjabloon?{" "}
             <a href="/voorbeeld.csv" download className="underline text-primary">
-              Download the sample CSV file.
+              Download het voorbeeld-CSV-bestand.
             </a>
           </p>
         </div>
         <DialogFooter>
           <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={loading}>
-            Cancel
+            Annuleren
           </Button>
           <Button onClick={handleSubmit} disabled={loading || !file}>
-            {loading ? "Importing..." : "Import"}
+            {loading ? "Importeren..." : "Importeren"}
           </Button>
         </DialogFooter>
       </DialogContent>

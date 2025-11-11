@@ -1,6 +1,6 @@
 term,definition,stem,group_name,gender_name,example_sentence
-"de man","the man;man","man","Groep 1","Mannelijk","De man loopt op straat."
-"het boek","the book;book","boek","Groep 2","Onzijdig","Ik lees het boek."
-"de vrouw","the woman;woman","vrouw","Groep 1","Vrouwelijk","De vrouw fietst naar haar werk."
-"de tafel","the table;table","tafel","Groep 3","Vrouwelijk","De kat zit op de tafel."
-"het huis","the house;house","huis","Groep 2","Onzijdig","Het huis is groot."
+"de man","the man;man","man","1","m","De man loopt op straat."
+"het boek","the book;book","boek","2","o","Ik lees het boek."
+"de vrouw","the woman;woman","vrouw","1","v","De vrouw fietst naar haar werk."
+"de tafel","the table;table","tafel","3","v","De kat zit op de tafel."
+"het huis","the house;house","huis","2","o","Het huis is groot."

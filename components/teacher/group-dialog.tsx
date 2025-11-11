@@ -52,7 +52,7 @@ export function GroupDialog({ group }: GroupDialogProps) {
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>{group ? "Groep Bewerken" : "Nieuwe Groep Toevoegen"}</DialogTitle>
-            <DialogDescription>{group ? "Werk de naam van de groep bij." : "Voeg een nieuwe groep toe (bv. Groep 1, Groep 2)."}</DialogDescription>
+            <DialogDescription>{group ? "Werk de naam van de groep bij." : "Voeg een nieuwe groep toe (bv. 1, 2, 3)."}</DialogDescription>
           </DialogHeader>
           <div className="py-4">
             <Label htmlFor="name">Naam</Label>

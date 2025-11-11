@@ -52,7 +52,7 @@ export function GenderDialog({ gender }: GenderDialogProps) {
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>{gender ? "Geslacht Bewerken" : "Nieuw Geslacht Toevoegen"}</DialogTitle>
-            <DialogDescription>{gender ? "Werk de naam van het geslacht bij." : "Voeg een nieuw geslacht toe (bv. mannelijk, vrouwelijk)."}</DialogDescription>
+            <DialogDescription>{gender ? "Werk de naam van het geslacht bij." : "Voeg een nieuw geslacht toe (bv. m, v, o, m/v)."}</DialogDescription>
           </DialogHeader>
           <div className="py-4">
             <Label htmlFor="name">Naam</Label>

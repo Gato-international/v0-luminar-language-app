@@ -23,16 +23,12 @@ export default async function FlashcardSetDetailPage({ params }: FlashcardSetDet
   const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single()
   if (!profile || profile.role !== "teacher") redirect("/auth/login")
 
-  // Fetch the flashcard set first
   const { data: set, error: setError } = await supabase.from("flashcard_sets").select("*").eq("id", setId).single()
+  if (setError || !set) redirect("/dashboard/teacher/content/flashcards")
 
-  // If the set doesn't exist or there's an error, redirect back to the list
-  if (setError || !set) {
-    redirect("/dashboard/teacher/content/flashcards")
-  }
-
-  // Then, fetch the flashcards belonging to this set
-  const { data: flashcards } = await supabase.from("flashcards").select("*").eq("set_id", setId).order("created_at")
+  const { data: flashcards } = await supabase.from("flashcards").select("*, groups(name), genders(name)").eq("set_id", setId).order("created_at")
+  const { data: groups } = await supabase.from("groups").select("*")
+  const { data: genders } = await supabase.from("genders").select("*")
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
@@ -49,7 +45,7 @@ export default async function FlashcardSetDetailPage({ params }: FlashcardSetDet
               <h1 className="text-2xl font-bold">{set.title}</h1>
               <p className="text-sm text-muted-foreground">{set.description || "Manage the flashcards in this set."}</p>
             </div>
-            <FlashcardDialog setId={setId} />
+            <FlashcardDialog setId={setId} groups={groups || []} genders={genders || []} />
           </div>
         </div>
       </header>
@@ -58,14 +54,14 @@ export default async function FlashcardSetDetailPage({ params }: FlashcardSetDet
         {flashcards && flashcards.length > 0 ? (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
             {flashcards.map((flashcard) => (
-              <EditableFlashcardCard key={flashcard.id} flashcard={flashcard} setId={setId} />
+              <EditableFlashcardCard key={flashcard.id} flashcard={flashcard} setId={setId} groups={groups || []} genders={genders || []} />
             ))}
           </div>
         ) : (
           <Card>
             <CardContent className="p-12 text-center">
               <p className="text-muted-foreground mb-4">No flashcards in this set yet.</p>
-              <FlashcardDialog setId={setId} />
+              <FlashcardDialog setId={setId} groups={groups || []} genders={genders || []} />
             </CardContent>
           </Card>
         )}

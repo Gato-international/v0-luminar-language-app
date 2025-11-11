@@ -16,16 +16,13 @@ export default async function FlashcardExercisePage({ params }: FlashcardExercis
   if (!user) redirect("/auth/login")
 
   const { data: set } = await supabase.from("flashcard_sets").select("*, chapters(title)").eq("id", setId).single()
-
-  if (!set) {
-    redirect("/dashboard/student/word-learning")
-  }
+  if (!set) redirect("/dashboard/student/word-learning")
 
   const { data: flashcards } = await supabase.from("flashcards").select("*").eq("set_id", setId)
+  if (!flashcards || flashcards.length === 0) redirect("/dashboard/student/word-learning")
 
-  if (!flashcards || flashcards.length === 0) {
-    redirect("/dashboard/student/word-learning")
-  }
+  const { data: groups } = await supabase.from("groups").select("*")
+  const { data: genders } = await supabase.from("genders").select("*")
 
-  return <FlashcardExercise set={set} flashcards={flashcards} />
+  return <FlashcardExercise set={set} flashcards={flashcards} groups={groups || []} genders={genders || []} />
 }

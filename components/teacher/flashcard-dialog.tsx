@@ -3,27 +3,22 @@
 import type React from "react"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Plus } from "lucide-react"
 import { createFlashcard } from "@/app/actions/flashcards"
 import { useRouter } from "next/navigation"
 
 interface FlashcardDialogProps {
   setId: string
+  groups: Array<{ id: string; name: string }>
+  genders: Array<{ id: string; name: string }>
 }
 
-export function FlashcardDialog({ setId }: FlashcardDialogProps) {
+export function FlashcardDialog({ setId, groups, genders }: FlashcardDialogProps) {
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
   const router = useRouter()
@@ -33,12 +28,18 @@ export function FlashcardDialog({ setId }: FlashcardDialogProps) {
     setLoading(true)
 
     const formData = new FormData(e.currentTarget)
-    const term = formData.get("term") as string
-    const definition = formData.get("definition") as string
-    const example_sentence = formData.get("example_sentence") as string
+    const data = {
+      set_id: setId,
+      term: formData.get("term") as string,
+      definition: formData.get("definition") as string,
+      stem: formData.get("stem") as string,
+      group_id: formData.get("group_id") as string,
+      gender_id: formData.get("gender_id") as string,
+      example_sentence: formData.get("example_sentence") as string,
+    }
 
     try {
-      await createFlashcard({ set_id: setId, term, definition, example_sentence })
+      await createFlashcard(data)
       setOpen(false)
       router.refresh()
     } catch (error) {
@@ -53,42 +54,52 @@ export function FlashcardDialog({ setId }: FlashcardDialogProps) {
       <DialogTrigger asChild>
         <Button>
           <Plus className="h-4 w-4 mr-2" />
-          Add Flashcard
+          Flashcard Toevoegen
         </Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="max-h-[90vh] overflow-y-auto">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
-            <DialogTitle>Add New Flashcard</DialogTitle>
-            <DialogDescription>Create a new flashcard for this set.</DialogDescription>
+            <DialogTitle>Nieuwe Flashcard Toevoegen</DialogTitle>
+            <DialogDescription>Maak een nieuwe flashcard voor deze set.</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="term">Term</Label>
-              <Input id="term" name="term" required placeholder="e.g., Hallo" />
+              <Label htmlFor="term">Woord</Label>
+              <Input id="term" name="term" required />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="definition">Meaning(s)</Label>
-              <Input id="definition" name="definition" required placeholder="e.g., Hello; Hi" />
-              <p className="text-xs text-muted-foreground">Separate multiple correct meanings with a semicolon (;).</p>
+              <Label htmlFor="definition">Betekenis</Label>
+              <Input id="definition" name="definition" required />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="example_sentence">Example Sentence (Optional)</Label>
-              <Textarea
-                id="example_sentence"
-                name="example_sentence"
-                placeholder="e.g., Hallo, hoe gaat het?"
-                rows={3}
-              />
+              <Label htmlFor="stem">Stam</Label>
+              <Input id="stem" name="stem" required />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="group_id">Groep</Label>
+                <Select name="group_id" required>
+                  <SelectTrigger><SelectValue placeholder="Kies een groep" /></SelectTrigger>
+                  <SelectContent>{groups.map(g => <SelectItem key={g.id} value={g.id}>{g.name}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="gender_id">Geslacht</Label>
+                <Select name="gender_id" required>
+                  <SelectTrigger><SelectValue placeholder="Kies een geslacht" /></SelectTrigger>
+                  <SelectContent>{genders.map(g => <SelectItem key={g.id} value={g.id}>{g.name}</SelectItem>)}</SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="example_sentence">Voorbeeldzin (Optioneel)</Label>
+              <Textarea id="example_sentence" name="example_sentence" rows={3} />
             </div>
           </div>
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={loading}>
-              Cancel
-            </Button>
-            <Button type="submit" disabled={loading}>
-              {loading ? "Saving..." : "Create"}
-            </Button>
+            <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={loading}>Annuleren</Button>
+            <Button type="submit" disabled={loading}>{loading ? "Opslaan..." : "Aanmaken"}</Button>
           </DialogFooter>
         </form>
       </DialogContent>

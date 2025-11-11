@@ -58,12 +58,17 @@ export async function deleteFlashcardSet(id: string) {
 
 // --- Individual Flashcard Actions ---
 
-export async function createFlashcard(data: {
+interface FlashcardData {
   set_id: string
   term: string
   definition: string
+  stem: string
+  group_id: string
+  gender_id: string
   example_sentence: string | null
-}) {
+}
+
+export async function createFlashcard(data: FlashcardData) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Unauthorized")
@@ -78,7 +83,7 @@ export async function createFlashcard(data: {
 export async function updateFlashcard(
   id: string,
   setId: string,
-  data: { term: string; definition: string; example_sentence: string | null },
+  data: Omit<FlashcardData, "set_id">,
 ) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()

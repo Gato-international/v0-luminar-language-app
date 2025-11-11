@@ -2,7 +2,7 @@ import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { ArrowLeft, BookOpen, FileText, Tag, Sparkles } from "lucide-react"
+import { ArrowLeft, BookOpen, FileText, Tag, Sparkles, Users, Type } from "lucide-react"
 import Link from "next/link"
 
 export default async function ContentManagementPage() {
@@ -27,6 +27,8 @@ export default async function ContentManagementPage() {
   const { count: sentencesCount } = await supabase.from("sentences").select("*", { count: "exact", head: true })
   const { count: casesCount } = await supabase.from("grammatical_cases").select("*", { count: "exact", head: true })
   const { count: flashcardSetsCount } = await supabase.from("flashcard_sets").select("*", { count: "exact", head: true })
+  const { count: groupsCount } = await supabase.from("groups").select("*", { count: "exact", head: true })
+  const { count: gendersCount } = await supabase.from("genders").select("*", { count: "exact", head: true })
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
@@ -44,7 +46,7 @@ export default async function ContentManagementPage() {
       </header>
 
       <div className="container mx-auto px-4 py-8">
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
           {/* Chapters */}
           <Link href="/dashboard/teacher/content/chapters">
             <Card className="hover:shadow-lg transition-shadow h-full">
@@ -59,7 +61,6 @@ export default async function ContentManagementPage() {
               </CardHeader>
               <CardContent>
                 <div className="text-3xl font-bold text-blue-500">{chaptersCount || 0}</div>
-                <p className="text-sm text-muted-foreground mt-1">Total chapters</p>
               </CardContent>
             </Card>
           </Link>
@@ -78,7 +79,6 @@ export default async function ContentManagementPage() {
               </CardHeader>
               <CardContent>
                 <div className="text-3xl font-bold text-green-500">{sentencesCount || 0}</div>
-                <p className="text-sm text-muted-foreground mt-1">Total sentences</p>
               </CardContent>
             </Card>
           </Link>
@@ -97,7 +97,6 @@ export default async function ContentManagementPage() {
               </CardHeader>
               <CardContent>
                 <div className="text-3xl font-bold text-purple-500">{casesCount || 0}</div>
-                <p className="text-sm text-muted-foreground mt-1">Total cases</p>
               </CardContent>
             </Card>
           </Link>
@@ -116,7 +115,42 @@ export default async function ContentManagementPage() {
               </CardHeader>
               <CardContent>
                 <div className="text-3xl font-bold text-yellow-500">{flashcardSetsCount || 0}</div>
-                <p className="text-sm text-muted-foreground mt-1">Total sets</p>
+              </CardContent>
+            </Card>
+          </Link>
+
+          {/* Groups */}
+          <Link href="/dashboard/teacher/content/groups">
+            <Card className="hover:shadow-lg transition-shadow h-full">
+              <CardHeader>
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="h-12 w-12 rounded-lg bg-indigo-500/10 flex items-center justify-center">
+                    <Users className="h-6 w-6 text-indigo-500" />
+                  </div>
+                  <CardTitle>Groups</CardTitle>
+                </div>
+                <CardDescription>Manage word groups</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold text-indigo-500">{groupsCount || 0}</div>
+              </CardContent>
+            </Card>
+          </Link>
+
+          {/* Genders */}
+          <Link href="/dashboard/teacher/content/genders">
+            <Card className="hover:shadow-lg transition-shadow h-full">
+              <CardHeader>
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="h-12 w-12 rounded-lg bg-pink-500/10 flex items-center justify-center">
+                    <Type className="h-6 w-6 text-pink-500" />
+                  </div>
+                  <CardTitle>Genders</CardTitle>
+                </div>
+                <CardDescription>Manage word genders</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="text-3xl font-bold text-pink-500">{gendersCount || 0}</div>
               </CardContent>
             </Card>
           </Link>

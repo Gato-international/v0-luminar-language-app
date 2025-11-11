@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState, useTransition } from "react"
+import { useState, useTransition, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
@@ -19,8 +19,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge"
 
 // This is now a client component to handle state
-export default function FlashcardSetDetailPage({ params }: { params: { id: string } }) {
-  const setId = params.id
+export default function FlashcardSetDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id: setId } = React.use(params)
   const router = useRouter()
   const [flashcards, setFlashcards] = useState<any[]>([])
   const [set, setSet] = useState<any>(null)
@@ -32,11 +32,14 @@ export default function FlashcardSetDetailPage({ params }: { params: { id: strin
   const [selectedIds, setSelectedIds] = useState<string[]>([])
   const [isPending, startTransition] = useTransition()
 
-  useState(() => {
+  useEffect(() => {
     const supabase = createClient()
     const fetchData = async () => {
       const { data: setData } = await supabase.from("flashcard_sets").select("*").eq("id", setId).single()
-      if (!setData) router.push("/dashboard/teacher/content/flashcards")
+      if (!setData) {
+        router.push("/dashboard/teacher/content/flashcards")
+        return
+      }
 
       const { data: flashcardsData } = await supabase.from("flashcards").select("*, groups(name), genders(name)").eq("set_id", setId).order("created_at")
       const { data: groupsData } = await supabase.from("groups").select("*")
@@ -49,7 +52,7 @@ export default function FlashcardSetDetailPage({ params }: { params: { id: strin
       setLoading(false)
     }
     fetchData()
-  })
+  }, [setId, router])
 
   const handleSelectAll = (checked: boolean) => {
     setSelectedIds(checked ? flashcards.map((f) => f.id) : [])

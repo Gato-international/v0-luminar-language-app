@@ -15,11 +15,10 @@ export default function LumiTogetherPage() {
 
   const handleCreateSession = () => {
     startTransition(async () => {
-      try {
-        await createTogetherSession()
-      } catch (error: any) {
-        toast.error("Failed to create session", { description: error.message })
-      }
+      // We don't wrap this in a try...catch block.
+      // If createTogetherSession throws a real error, Next.js will handle it.
+      // If it calls redirect(), Next.js will handle the navigation.
+      await createTogetherSession()
     })
   }
 

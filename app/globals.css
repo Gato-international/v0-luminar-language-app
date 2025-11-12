@@ -3,6 +3,45 @@
 
 @custom-variant dark (&:is(.dark *));
 
+@keyframes fadeSlideIn {
+  from {
+    opacity: 0;
+    filter: blur(5px);
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0px);
+    transform: translateY(0px);
+  }
+}
+
+@keyframes slideRightIn {
+  from {
+    opacity: 0;
+    filter: blur(10px);
+    transform: translateX(-50px);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0px);
+    transform: translateX(0px);
+  }
+}
+
+@keyframes testimonialIn {
+  from {
+    opacity: 0;
+    filter: blur(5px);
+    transform: translateY(30px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0px);
+    transform: translateY(0px) scale(1);
+  }
+}
+
 :root {
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
@@ -114,26 +153,6 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
-
-  animation: {
-    element: "fadeSlideIn 0.8s ease-out forwards",
-    "slide-right": "slideRightIn 1s ease-out forwards",
-    testimonial: "testimonialIn 0.8s ease-out forwards",
-  }
-  keyframes: {
-    fadeSlideIn: {
-      from: { opacity: "0", filter: "blur(5px)", transform: "translateY(20px)" },
-      to: { opacity: "1", filter: "blur(0px)", transform: "translateY(0px)" },
-    },
-    slideRightIn: {
-      from: { opacity: "0", filter: "blur(10px)", transform: "translateX(-50px)" },
-      to: { opacity: "1", filter: "blur(0px)", transform: "translateX(0px)" },
-    },
-    testimonialIn: {
-      from: { opacity: "0", filter: "blur(5px)", transform: "translateY(30px) scale(0.95)" },
-      to: { opacity: "1", filter: "blur(0px)", transform: "translateY(0px) scale(1)" },
-    },
-  }
 }
 
 @layer base {

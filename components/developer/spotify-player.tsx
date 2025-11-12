@@ -4,29 +4,29 @@ import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Music, X, ChevronDown, ChevronUp } from "lucide-react"
+import { Music, X, ChevronDown, ChevronUp, RotateCcw } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
 
 export function SpotifyPlayer() {
   const [isOpen, setIsOpen] = useState(false)
   const [isCollapsed, setIsCollapsed] = useState(false)
-  // Default to a nice lofi playlist
-  const [uri, setUri] = useState("spotify:playlist:37i9dQZF1DXcBWIGoYBM5M")
-  const [inputValue, setInputValue] = useState("spotify:playlist:37i9dQZF1DXcBWIGoYBM5M")
+  const defaultPlaylistUrl = "https://open.spotify.com/embed/playlist/6Q6ymtrtuHGqaGNrXewvW1"
+  const [embedUrl, setEmbedUrl] = useState(defaultPlaylistUrl)
+  const [searchQuery, setSearchQuery] = useState("")
 
-  const handleLoad = () => {
-    if (inputValue.startsWith("spotify:")) {
-      setUri(inputValue)
-      toast.success("Spotify content loaded!")
-    } else {
-      toast.error("Invalid Spotify URI", {
-        description: "Please use the format 'spotify:track:...' or similar.",
-      })
+  const handleSearch = () => {
+    if (searchQuery.trim()) {
+      setEmbedUrl(`https://open.spotify.com/embed/search/${encodeURIComponent(searchQuery)}`)
+      toast.success(`Searching for "${searchQuery}"...`)
     }
   }
 
-  const embedUrl = `https://open.spotify.com/embed/${uri.replace("spotify:", "").replace(/:/g, "/")}`
+  const handleReset = () => {
+    setEmbedUrl(defaultPlaylistUrl)
+    setSearchQuery("")
+    toast.info("Player reset to default playlist.")
+  }
 
   if (!isOpen) {
     return (
@@ -62,18 +62,23 @@ export function SpotifyPlayer() {
         <div className="space-y-2">
           <div className="flex gap-2">
             <Input
-              placeholder="Spotify URI (e.g., spotify:album:...)"
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
+              placeholder="Search for a song or artist..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               className="h-8 text-xs"
+              onKeyDown={(e) => e.key === "Enter" && handleSearch()}
             />
-            <Button size="sm" onClick={handleLoad} className="h-8">
-              Load
+            <Button size="sm" onClick={handleSearch} className="h-8">
+              Search
             </Button>
           </div>
-          <p className="text-xs text-muted-foreground">Paste a song, album, or playlist URI.</p>
+          <Button variant="link" size="sm" className="text-xs h-auto p-0 text-muted-foreground" onClick={handleReset}>
+            <RotateCcw className="h-3 w-3 mr-1" />
+            Reset to default playlist
+          </Button>
         </div>
         <iframe
+          key={embedUrl}
           title="Spotify Embed Player"
           style={{ borderRadius: "12px" }}
           src={embedUrl}

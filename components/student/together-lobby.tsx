@@ -137,34 +137,28 @@ export function TogetherLobby({ session, user }: { session: any; user: any }) {
       setParticipants(data || [])
     }
 
-    const participantsChannel = supabase
-      .channel(`together-session-participants-${session.id}`)
+    // Single channel for all lobby communication
+    const channel = supabase.channel(`together-session-lobby-${session.id}`)
+
+    channel
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "session_participants", filter: `session_id=eq.${session.id}` },
-        fetchParticipants,
+        fetchParticipants, // Refetch on any change
       )
-      .subscribe()
-
-    const sessionChannel = supabase
-      .channel(`together-session-status-${session.id}`)
-      .on(
-        "postgres_changes",
-        { event: "UPDATE", schema: "public", table: "together_sessions", filter: `id=eq.${session.id}` },
-        (payload) => {
-          if (payload.new.status === "in_progress") {
-            toast.success("Session starting! Let's go!")
-            router.push(`/together/${session.id}/play`)
-          }
-        },
-      )
-      .subscribe()
-
-    fetchParticipants()
+      .on("broadcast", { event: "SESSION_START" }, () => {
+        toast.success("Session starting! Let's go!")
+        router.push(`/together/${session.id}/play`)
+      })
+      .subscribe((status) => {
+        if (status === "SUBSCRIBED") {
+          // Fetch initial participants once subscribed to avoid race conditions
+          fetchParticipants()
+        }
+      })
 
     return () => {
-      supabase.removeChannel(participantsChannel)
-      supabase.removeChannel(sessionChannel)
+      supabase.removeChannel(channel)
     }
   }, [session.id, user.id, router])
 

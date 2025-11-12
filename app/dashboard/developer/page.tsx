@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Users, Settings, Database, Code, Activity, Megaphone, FileText, Target, Package, Mail } from "lucide-react"
+import { Users, Settings, Database, Code, Activity, Megaphone, FileText, Target, Package, Mail, ShieldCheck } from "lucide-react"
 import Link from "next/link"
 import { UserNav } from "@/components/student/user-nav"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -262,16 +262,16 @@ export default async function DeveloperDashboardPage() {
             </Card>
           </Link>
 
-          <Link href="/dashboard/developer/student-data">
+          <Link href="/dashboard/developer/platform-status">
             <Card className="hover:shadow-lg transition-shadow h-full">
               <CardHeader>
                 <div className="flex items-center gap-3 mb-2">
-                  <div className="h-12 w-12 rounded-lg bg-orange-500/10 flex items-center justify-center">
-                    <Activity className="h-6 w-6 text-orange-500" />
+                  <div className="h-12 w-12 rounded-lg bg-yellow-500/10 flex items-center justify-center">
+                    <ShieldCheck className="h-6 w-6 text-yellow-500" />
                   </div>
-                  <CardTitle>Student Data</CardTitle>
+                  <CardTitle>Platform Status</CardTitle>
                 </div>
-                <CardDescription>Monitor exercises, attempts, and AI feedback logs.</CardDescription>
+                <CardDescription>Control maintenance mode and other platform states.</CardDescription>
               </CardHeader>
             </Card>
           </Link>

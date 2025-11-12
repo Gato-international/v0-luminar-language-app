@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Users, Settings, Database, Code, Activity } from "lucide-react"
+import { Users, Settings, Database, Code, Activity, Megaphone } from "lucide-react"
 import Link from "next/link"
 import { UserNav } from "@/components/student/user-nav"
 
@@ -68,6 +68,20 @@ export default async function DeveloperDashboardPage() {
                   <CardTitle>Student Data</CardTitle>
                 </div>
                 <CardDescription>Monitor exercises, attempts, and AI feedback logs.</CardDescription>
+              </CardHeader>
+            </Card>
+          </Link>
+
+          <Link href="/dashboard/developer/announcements">
+            <Card className="hover:shadow-lg transition-shadow h-full">
+              <CardHeader>
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="h-12 w-12 rounded-lg bg-teal-500/10 flex items-center justify-center">
+                    <Megaphone className="h-6 w-6 text-teal-500" />
+                  </div>
+                  <CardTitle>Announcements</CardTitle>
+                </div>
+                <CardDescription>Create and manage global pop-up announcements.</CardDescription>
               </CardHeader>
             </Card>
           </Link>

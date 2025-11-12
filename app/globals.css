@@ -119,7 +119,7 @@
     element: "fadeSlideIn 0.8s ease-out forwards",
     "slide-right": "slideRightIn 1s ease-out forwards",
     testimonial: "testimonialIn 0.8s ease-out forwards",
-  },
+  }
   keyframes: {
     fadeSlideIn: {
       from: { opacity: "0", filter: "blur(5px)", transform: "translateY(20px)" },

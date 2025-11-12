@@ -21,8 +21,8 @@ export async function createGrammaticalCase(data: {
 
   const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single()
 
-  if (!profile || profile.role !== "teacher") {
-    throw new Error("Unauthorized")
+  if (!profile || !["teacher", "developer"].includes(profile.role)) {
+    throw new Error("Forbidden")
   }
 
   const { error } = await supabase.from("grammatical_cases").insert({
@@ -37,6 +37,7 @@ export async function createGrammaticalCase(data: {
   }
 
   revalidatePath("/dashboard/teacher/content/cases")
+  revalidatePath("/dashboard/developer/content/cases")
 }
 
 export async function updateGrammaticalCase(
@@ -60,8 +61,8 @@ export async function updateGrammaticalCase(
 
   const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single()
 
-  if (!profile || profile.role !== "teacher") {
-    throw new Error("Unauthorized")
+  if (!profile || !["teacher", "developer"].includes(profile.role)) {
+    throw new Error("Forbidden")
   }
 
   const { error } = await supabase
@@ -79,6 +80,7 @@ export async function updateGrammaticalCase(
   }
 
   revalidatePath("/dashboard/teacher/content/cases")
+  revalidatePath("/dashboard/developer/content/cases")
 }
 
 export async function deleteGrammaticalCase(id: string) {
@@ -94,8 +96,8 @@ export async function deleteGrammaticalCase(id: string) {
 
   const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single()
 
-  if (!profile || profile.role !== "teacher") {
-    throw new Error("Unauthorized")
+  if (!profile || !["teacher", "developer"].includes(profile.role)) {
+    throw new Error("Forbidden")
   }
 
   const { error } = await supabase.from("grammatical_cases").delete().eq("id", id)
@@ -105,4 +107,5 @@ export async function deleteGrammaticalCase(id: string) {
   }
 
   revalidatePath("/dashboard/teacher/content/cases")
+  revalidatePath("/dashboard/developer/content/cases")
 }

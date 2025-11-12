@@ -21,8 +21,8 @@ export async function createSentence(data: {
 
   const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single()
 
-  if (!profile || profile.role !== "teacher") {
-    throw new Error("Unauthorized")
+  if (!profile || !["teacher", "developer"].includes(profile.role)) {
+    throw new Error("Forbidden")
   }
 
   const { data: sentence, error } = await supabase
@@ -56,6 +56,7 @@ export async function createSentence(data: {
   }
 
   revalidatePath("/dashboard/teacher/content/sentences")
+  revalidatePath("/dashboard/developer/content/sentences")
 }
 
 export async function updateSentence(
@@ -79,8 +80,8 @@ export async function updateSentence(
 
   const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single()
 
-  if (!profile || profile.role !== "teacher") {
-    throw new Error("Unauthorized")
+  if (!profile || !["teacher", "developer"].includes(profile.role)) {
+    throw new Error("Forbidden")
   }
 
   const { error } = await supabase
@@ -119,6 +120,7 @@ export async function updateSentence(
   }
 
   revalidatePath("/dashboard/teacher/content/sentences")
+  revalidatePath("/dashboard/developer/content/sentences")
 }
 
 export async function deleteSentence(id: string) {
@@ -134,8 +136,8 @@ export async function deleteSentence(id: string) {
 
   const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single()
 
-  if (!profile || profile.role !== "teacher") {
-    throw new Error("Unauthorized")
+  if (!profile || !["teacher", "developer"].includes(profile.role)) {
+    throw new Error("Forbidden")
   }
 
   const { error } = await supabase.from("sentences").delete().eq("id", id)
@@ -145,4 +147,5 @@ export async function deleteSentence(id: string) {
   }
 
   revalidatePath("/dashboard/teacher/content/sentences")
+  revalidatePath("/dashboard/developer/content/sentences")
 }

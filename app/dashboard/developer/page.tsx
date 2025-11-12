@@ -86,17 +86,19 @@ export default async function DeveloperDashboardPage() {
             </Card>
           </Link>
 
-          <Card className="opacity-50 cursor-not-allowed">
-            <CardHeader>
-              <div className="flex items-center gap-3 mb-2">
-                <div className="h-12 w-12 rounded-lg bg-green-500/10 flex items-center justify-center">
-                  <Database className="h-6 w-6 text-green-500" />
+          <Link href="/dashboard/developer/content">
+            <Card className="hover:shadow-lg transition-shadow h-full">
+              <CardHeader>
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="h-12 w-12 rounded-lg bg-green-500/10 flex items-center justify-center">
+                    <Database className="h-6 w-6 text-green-500" />
+                  </div>
+                  <CardTitle>Content Database</CardTitle>
                 </div>
-                <CardTitle>Content Database</CardTitle>
-              </div>
-              <CardDescription>Raw access to all chapters, sentences, and flashcards. (Coming Soon)</CardDescription>
-            </CardHeader>
-          </Card>
+                <CardDescription>Raw access to all chapters, sentences, and flashcards.</CardDescription>
+              </CardHeader>
+            </Card>
+          </Link>
 
           <Link href="/dashboard/teacher/settings">
             <Card className="hover:shadow-lg transition-shadow h-full">

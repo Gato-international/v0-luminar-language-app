@@ -10,7 +10,7 @@ export async function createFlashcardSet(data: { title: string; description: str
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Unauthorized")
   const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single()
-  if (!profile || profile.role !== "teacher") throw new Error("Unauthorized")
+  if (!profile || !["teacher", "developer"].includes(profile.role)) throw new Error("Forbidden")
 
   const { error } = await supabase.from("flashcard_sets").insert({
     title: data.title,
@@ -19,6 +19,7 @@ export async function createFlashcardSet(data: { title: string; description: str
   })
   if (error) throw new Error(error.message)
   revalidatePath("/dashboard/teacher/content/flashcards")
+  revalidatePath("/dashboard/developer/content/flashcards")
 }
 
 export async function updateFlashcardSet(
@@ -29,7 +30,7 @@ export async function updateFlashcardSet(
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Unauthorized")
   const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single()
-  if (!profile || profile.role !== "teacher") throw new Error("Unauthorized")
+  if (!profile || !["teacher", "developer"].includes(profile.role)) throw new Error("Forbidden")
 
   const { error } = await supabase
     .from("flashcard_sets")
@@ -42,6 +43,8 @@ export async function updateFlashcardSet(
   if (error) throw new Error(error.message)
   revalidatePath("/dashboard/teacher/content/flashcards")
   revalidatePath(`/dashboard/teacher/content/flashcards/${id}`)
+  revalidatePath("/dashboard/developer/content/flashcards")
+  revalidatePath(`/dashboard/developer/content/flashcards/${id}`)
 }
 
 export async function deleteFlashcardSet(id: string) {
@@ -49,11 +52,12 @@ export async function deleteFlashcardSet(id: string) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Unauthorized")
   const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single()
-  if (!profile || profile.role !== "teacher") throw new Error("Unauthorized")
+  if (!profile || !["teacher", "developer"].includes(profile.role)) throw new Error("Forbidden")
 
   const { error } = await supabase.from("flashcard_sets").delete().eq("id", id)
   if (error) throw new Error(error.message)
   revalidatePath("/dashboard/teacher/content/flashcards")
+  revalidatePath("/dashboard/developer/content/flashcards")
 }
 
 // --- Individual Flashcard Actions ---
@@ -73,11 +77,12 @@ export async function createFlashcard(data: FlashcardData) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Unauthorized")
   const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single()
-  if (!profile || profile.role !== "teacher") throw new Error("Unauthorized")
+  if (!profile || !["teacher", "developer"].includes(profile.role)) throw new Error("Forbidden")
 
   const { error } = await supabase.from("flashcards").insert(data)
   if (error) throw new Error(error.message)
   revalidatePath(`/dashboard/teacher/content/flashcards/${data.set_id}`)
+  revalidatePath(`/dashboard/developer/content/flashcards/${data.set_id}`)
 }
 
 export async function updateFlashcard(
@@ -89,11 +94,12 @@ export async function updateFlashcard(
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Unauthorized")
   const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single()
-  if (!profile || profile.role !== "teacher") throw new Error("Unauthorized")
+  if (!profile || !["teacher", "developer"].includes(profile.role)) throw new Error("Forbidden")
 
   const { error } = await supabase.from("flashcards").update(data).eq("id", id)
   if (error) throw new Error(error.message)
   revalidatePath(`/dashboard/teacher/content/flashcards/${setId}`)
+  revalidatePath(`/dashboard/developer/content/flashcards/${setId}`)
 }
 
 export async function deleteFlashcard(id: string, setId: string) {
@@ -101,11 +107,12 @@ export async function deleteFlashcard(id: string, setId: string) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Unauthorized")
   const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single()
-  if (!profile || profile.role !== "teacher") throw new Error("Unauthorized")
+  if (!profile || !["teacher", "developer"].includes(profile.role)) throw new Error("Forbidden")
 
   const { error } = await supabase.from("flashcards").delete().eq("id", id)
   if (error) throw new Error(error.message)
   revalidatePath(`/dashboard/teacher/content/flashcards/${setId}`)
+  revalidatePath(`/dashboard/developer/content/flashcards/${setId}`)
 }
 
 export async function bulkDeleteFlashcards(ids: string[], setId: string) {
@@ -113,11 +120,12 @@ export async function bulkDeleteFlashcards(ids: string[], setId: string) {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) throw new Error("Unauthorized")
     const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single()
-    if (!profile || profile.role !== "teacher") throw new Error("Unauthorized")
+    if (!profile || !["teacher", "developer"].includes(profile.role)) throw new Error("Forbidden")
 
     const { error } = await supabase.from("flashcards").delete().in("id", ids)
     if (error) throw new Error(error.message)
     revalidatePath(`/dashboard/teacher/content/flashcards/${setId}`)
+    revalidatePath(`/dashboard/developer/content/flashcards/${setId}`)
 }
 
 export async function importFlashcardsFromCSV(setId: string, csvContent: string) {
@@ -125,7 +133,7 @@ export async function importFlashcardsFromCSV(setId: string, csvContent: string)
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) throw new Error("Unauthorized")
   const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single()
-  if (!profile || profile.role !== "teacher") throw new Error("Unauthorized")
+  if (!profile || !["teacher", "developer"].includes(profile.role)) throw new Error("Forbidden")
 
   // Fetch all existing groups and genders once to create a lookup map
   const { data: groups } = await supabase.from("groups").select("id, name")
@@ -173,5 +181,6 @@ export async function importFlashcardsFromCSV(setId: string, csvContent: string)
   }
 
   revalidatePath(`/dashboard/teacher/content/flashcards/${setId}`)
+  revalidatePath(`/dashboard/developer/content/flashcards/${setId}`)
   return { count: flashcardsToInsert.length }
 }

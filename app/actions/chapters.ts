@@ -16,8 +16,8 @@ export async function createChapter(data: { title: string; description: string; 
 
   const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single()
 
-  if (!profile || profile.role !== "teacher") {
-    throw new Error("Unauthorized")
+  if (!profile || !["teacher", "developer"].includes(profile.role)) {
+    throw new Error("Forbidden")
   }
 
   const { error } = await supabase.from("chapters").insert({
@@ -31,6 +31,7 @@ export async function createChapter(data: { title: string; description: string; 
   }
 
   revalidatePath("/dashboard/teacher/content/chapters")
+  revalidatePath("/dashboard/developer/content/chapters")
 }
 
 export async function updateChapter(id: string, data: { title: string; description: string; order_index: number }) {
@@ -46,8 +47,8 @@ export async function updateChapter(id: string, data: { title: string; descripti
 
   const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single()
 
-  if (!profile || profile.role !== "teacher") {
-    throw new Error("Unauthorized")
+  if (!profile || !["teacher", "developer"].includes(profile.role)) {
+    throw new Error("Forbidden")
   }
 
   const { error } = await supabase
@@ -64,6 +65,7 @@ export async function updateChapter(id: string, data: { title: string; descripti
   }
 
   revalidatePath("/dashboard/teacher/content/chapters")
+  revalidatePath("/dashboard/developer/content/chapters")
 }
 
 export async function deleteChapter(id: string) {
@@ -79,8 +81,8 @@ export async function deleteChapter(id: string) {
 
   const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single()
 
-  if (!profile || profile.role !== "teacher") {
-    throw new Error("Unauthorized")
+  if (!profile || !["teacher", "developer"].includes(profile.role)) {
+    throw new Error("Forbidden")
   }
 
   const { error } = await supabase.from("chapters").delete().eq("id", id)
@@ -90,4 +92,5 @@ export async function deleteChapter(id: string) {
   }
 
   revalidatePath("/dashboard/teacher/content/chapters")
+  revalidatePath("/dashboard/developer/content/chapters")
 }

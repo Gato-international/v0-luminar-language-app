@@ -48,7 +48,7 @@ export function EmailTemplateDialog({ template }: EmailTemplateDialogProps) {
         <DialogHeader>
           <DialogTitle>{template ? "Edit Email Template" : "Create New Email Template"}</DialogTitle>
           <DialogDescription>
-            Design an email template. Use placeholders like `{{full_name}}` and `{{confirmation_link}}`.
+            Design an email template. Use placeholders like <code>{"{{full_name}}"}</code> and <code>{"{{confirmation_link}}"}</code>.
           </DialogDescription>
         </DialogHeader>
         <form action={handleSubmit} className="space-y-4">

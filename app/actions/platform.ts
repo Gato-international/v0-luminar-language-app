@@ -18,12 +18,30 @@ export async function updatePlatformStatus(role: "student" | "teacher", status: 
   await checkDeveloperRole()
   const supabase = await createClient()
 
-  const { error } = await supabase
+  // Check if a record for this role already exists
+  const { data: existingStatus, error: selectError } = await supabase
     .from("platform_status")
-    .update({ status, updated_at: new Date().toISOString() })
+    .select("id")
     .eq("role", role)
+    .single()
 
-  if (error) throw new Error(error.message)
+  // Ignore 'PGRST116' which means no rows were found, but throw other errors
+  if (selectError && selectError.code !== "PGRST116") {
+    throw new Error(selectError.message)
+  }
+
+  if (existingStatus) {
+    // Update the existing record if it was found
+    const { error: updateError } = await supabase
+      .from("platform_status")
+      .update({ status, updated_at: new Date().toISOString() })
+      .eq("role", role)
+    if (updateError) throw new Error(updateError.message)
+  } else {
+    // Insert a new record if one didn't exist
+    const { error: insertError } = await supabase.from("platform_status").insert({ role, status })
+    if (insertError) throw new Error(insertError.message)
+  }
 
   revalidatePath("/dashboard/developer/platform-status")
 }

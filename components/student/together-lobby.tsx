@@ -154,7 +154,7 @@ export function TogetherLobby({ session, user }: { session: any; user: any }) {
         (payload) => {
           if (payload.new.status === "in_progress") {
             toast.success("Session starting! Let's go!")
-            router.push("/dashboard/student")
+            router.push(`/together/${session.id}/play`)
           }
         },
       )

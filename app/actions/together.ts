@@ -1,6 +1,7 @@
 "use server"
 
 import { createClient } from "@/lib/supabase/server"
+import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 
 // Helper function to shuffle an array
@@ -79,10 +80,53 @@ export async function startTogetherSession(sessionId: string) {
   // Update the session status
   const { error: updateError } = await supabase
     .from("together_sessions")
-    .update({ status: "in_progress" })
+    .update({ status: "in_progress", current_assignment_index: 1 })
     .eq("id", sessionId)
 
   if (updateError) throw new Error(`Failed to start session: ${updateError.message}`)
+  // Revalidation is not needed as clients will update via realtime
+}
+
+export async function nextAssignment(sessionId: string) {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) throw new Error("Unauthorized")
+
+  // Verify the user is the host
+  const { data: session, error: sessionError } = await supabase
+    .from("together_sessions")
+    .select("created_by, current_assignment_index")
+    .eq("id", sessionId)
+    .single()
+
+  if (sessionError) throw new Error("Session not found.")
+  if (session.created_by !== user.id) throw new Error("Only the host can proceed.")
+
+  const { count: totalAssignments } = await supabase
+    .from("session_assignments")
+    .select("*", { count: "exact", head: true })
+    .eq("session_id", sessionId)
+
+  const currentIndex = session.current_assignment_index || 1
+  const nextIndex = currentIndex + 1
+
+  if (nextIndex > (totalAssignments || 0)) {
+    // End of session
+    const { error: updateError } = await supabase
+      .from("together_sessions")
+      .update({ status: "completed", completed_at: new Date().toISOString() })
+      .eq("id", sessionId)
+    if (updateError) throw new Error(updateError.message)
+  } else {
+    // Go to next assignment
+    const { error: updateError } = await supabase
+      .from("together_sessions")
+      .update({ current_assignment_index: nextIndex })
+      .eq("id", sessionId)
+    if (updateError) throw new Error(updateError.message)
+  }
 }
 
 export async function leaveTogetherSession(sessionId: string) {
@@ -99,7 +143,6 @@ export async function leaveTogetherSession(sessionId: string) {
     .eq("user_id", user.id)
 
   if (error) {
-    // Don't throw, just log it, so the redirect still happens
     console.error("Error leaving session:", error.message)
   }
 

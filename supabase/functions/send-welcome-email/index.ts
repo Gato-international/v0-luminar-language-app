@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts"
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0"
 import { Resend } from "https://esm.sh/resend@3.4.0"
 
 const corsHeaders = {
@@ -17,33 +18,38 @@ serve(async (req: Request) => {
       throw new Error("RESEND_API_KEY is not set in Supabase secrets.")
     }
 
+    const supabaseAdmin = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+    )
+
     const { record } = await req.json()
     const { email, raw_user_meta_data, confirmation_token } = record
     const fullName = raw_user_meta_data?.full_name || "New User"
 
+    // Fetch the email template from the database
+    const { data: template, error: templateError } = await supabaseAdmin
+      .from("email_templates")
+      .select("subject, body")
+      .eq("name", "welcome-email")
+      .single()
+
+    if (templateError || !template) {
+      throw new Error(`Could not find 'welcome-email' template: ${templateError?.message}`)
+    }
+
+    // Replace placeholders
+    const confirmationLink = `https://jodxcwqikzjoqkekqqgg.supabase.co/auth/v1/verify?token=${confirmation_token}&type=signup&redirect_to=/dashboard`
+    let emailBody = template.body.replace("{{full_name}}", fullName)
+    emailBody = emailBody.replace("{{confirmation_link}}", confirmationLink)
+
     const resend = new Resend(resendApiKey)
 
-    // Note: You must verify your domain in Resend to send from a custom domain.
-    // Using their default domain for now.
     const { error } = await resend.emails.send({
       from: "Luminar <onboarding@resend.dev>",
       to: [email],
-      subject: "Welcome to Luminar!",
-      html: `
-        <div style="font-family: sans-serif; line-height: 1.6;">
-          <h1 style="color: #333;">Welcome to Luminar, ${fullName}!</h1>
-          <p>We're thrilled to have you on board. Get ready to master grammar and expand your vocabulary like never before.</p>
-          <p>Click the button below to confirm your email address and start your learning journey:</p>
-          <a 
-            href="https://jodxcwqikzjoqkekqqgg.supabase.co/auth/v1/verify?token=${confirmation_token}&type=signup&redirect_to=/dashboard" 
-            style="display: inline-block; padding: 12px 24px; background-color: #000; color: #fff; text-decoration: none; border-radius: 8px;"
-          >
-            Confirm Your Email & Go to Dashboard
-          </a>
-          <p>Happy learning!</p>
-          <p><em>— The Luminar Team</em></p>
-        </div>
-      `,
+      subject: template.subject,
+      html: emailBody,
     })
 
     if (error) {

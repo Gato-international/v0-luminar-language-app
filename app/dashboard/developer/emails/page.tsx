@@ -2,8 +2,13 @@ import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { ArrowLeft, CheckCircle2 } from "lucide-react"
+import { ArrowLeft, Mail } from "lucide-react"
 import Link from "next/link"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { format } from "date-fns"
+import { EmailTemplateDialog } from "@/components/developer/email-template-dialog"
+import { DeleteDialog } from "@/components/teacher/delete-dialog"
+import { deleteEmailTemplate } from "@/app/actions/emails"
 
 export default async function EmailManagementPage() {
   const supabase = await createClient()
@@ -15,6 +20,8 @@ export default async function EmailManagementPage() {
   const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single()
   if (!profile || profile.role !== "developer") redirect("/dashboard")
 
+  const { data: templates } = await supabase.from("email_templates").select("*").order("name")
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
       <header className="border-b bg-card/50 backdrop-blur-sm">
@@ -25,29 +32,57 @@ export default async function EmailManagementPage() {
               Back to Developer Dashboard
             </Link>
           </Button>
-          <h1 className="text-2xl font-bold">Email Management</h1>
-          <p className="text-sm text-muted-foreground">Configure and manage automated emails.</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold">Email Management</h1>
+              <p className="text-sm text-muted-foreground">Create and manage transactional email templates.</p>
+            </div>
+            <EmailTemplateDialog />
+          </div>
         </div>
       </header>
 
       <div className="container mx-auto px-4 py-8">
         <Card>
           <CardHeader>
-            <CardTitle>Automated Welcome Email</CardTitle>
+            <CardTitle>Email Templates</CardTitle>
             <CardDescription>
-              This email is automatically sent to new users upon successful signup and email confirmation.
+              These templates are used by automated system processes, like sending a welcome email.
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center gap-3 rounded-lg border bg-green-500/10 p-4 text-green-700">
-              <CheckCircle2 className="h-5 w-5" />
-              <p className="font-medium">The welcome email trigger is active.</p>
+            <div className="rounded-lg border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Subject</TableHead>
+                    <TableHead>Last Updated</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {templates?.map((template) => (
+                    <TableRow key={template.id}>
+                      <TableCell className="font-medium">
+                        <div className="flex items-center gap-2">
+                          <Mail className="h-4 w-4 text-muted-foreground" />
+                          <span>{template.name}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>{template.subject}</TableCell>
+                      <TableCell>{format(new Date(template.updated_at), "PPp")}</TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex items-center justify-end">
+                          <EmailTemplateDialog template={template} />
+                          <DeleteDialog id={template.id} type="email template" onDelete={deleteEmailTemplate} />
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </div>
-            <p className="mt-4 text-sm text-muted-foreground">
-              The email content is managed within the{" "}
-              <code className="bg-muted px-1 py-0.5 rounded-sm">/supabase/functions/send-welcome-email/index.ts</code>{" "}
-              file. Building a full email template editor is a larger project planned for the future.
-            </p>
           </CardContent>
         </Card>
       </div>

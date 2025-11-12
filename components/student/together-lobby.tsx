@@ -5,23 +5,108 @@ import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Loader2, Copy, Sparkles } from "lucide-react"
+import { Loader2, Copy, Sparkles, LogOut } from "lucide-react"
 import { toast } from "sonner"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
-import { startTogetherSession } from "@/app/actions/together"
+import { startTogetherSession, leaveTogetherSession } from "@/app/actions/together"
+import { cn } from "@/lib/utils"
 
 const playfulAdjectives = ["Quick", "Clever", "Wise", "Brave", "Happy", "Silent", "Swift", "Curious"]
 const playfulNouns = ["Fox", "Owl", "Lion", "Panda", "Eagle", "Tiger", "Dolphin", "Wolf"]
 const userColors = ["#3b82f6", "#22c55e", "#ef4444", "#eab308", "#8b5cf6", "#ec4899", "#f97316", "#14b8a6"]
 
+function JoinScreen({
+  sessionId,
+  userId,
+  onJoinSuccess,
+}: {
+  sessionId: string
+  userId: string
+  onJoinSuccess: () => void
+}) {
+  const [availableColors, setAvailableColors] = useState<string[]>([])
+  const [selectedColor, setSelectedColor] = useState<string | null>(null)
+  const [isJoining, setIsJoining] = useState(false)
+
+  useEffect(() => {
+    const supabase = createClient()
+    const fetchUsedColors = async () => {
+      const { data } = await supabase.from("session_participants").select("color").eq("session_id", sessionId)
+      const usedColors = data?.map((p) => p.color) || []
+      setAvailableColors(userColors.filter((c) => !usedColors.includes(c)))
+    }
+    fetchUsedColors()
+  }, [sessionId])
+
+  const handleJoin = async () => {
+    if (!selectedColor) {
+      toast.error("Please select a color to join.")
+      return
+    }
+    setIsJoining(true)
+    const supabase = createClient()
+    const playfulUsername = `${playfulAdjectives[Math.floor(Math.random() * playfulAdjectives.length)]} ${
+      playfulNouns[Math.floor(Math.random() * playfulNouns.length)]
+    }`
+
+    const { error } = await supabase
+      .from("session_participants")
+      .insert({ session_id: sessionId, user_id: userId, playful_username: playfulUsername, color: selectedColor })
+
+    if (error) {
+      toast.error("Failed to join session", { description: error.message })
+      setIsJoining(false)
+    } else {
+      onJoinSuccess()
+    }
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-background to-muted/20 flex items-center justify-center p-6">
+      <Card className="w-full max-w-md">
+        <CardHeader className="text-center">
+          <CardTitle className="text-2xl">Join the Session</CardTitle>
+          <CardDescription>Pick a color to represent you in the lobby.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="flex flex-wrap justify-center gap-3">
+            {userColors.map((color) => (
+              <button
+                key={color}
+                onClick={() => setSelectedColor(color)}
+                className={cn(
+                  "h-12 w-12 rounded-full transition-all ring-offset-background ring-offset-2",
+                  selectedColor === color && "ring-2 ring-primary",
+                  !availableColors.includes(color) && "opacity-30 cursor-not-allowed relative",
+                )}
+                style={{ backgroundColor: color }}
+                disabled={!availableColors.includes(color)}
+              >
+                {!availableColors.includes(color) && (
+                  <div className="absolute inset-0 flex items-center justify-center text-white font-bold">X</div>
+                )}
+              </button>
+            ))}
+          </div>
+          <Button className="w-full" onClick={handleJoin} disabled={!selectedColor || isJoining}>
+            {isJoining ? <Loader2 className="h-4 w-4 animate-spin" /> : "Join Session"}
+          </Button>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+
 export function TogetherLobby({ session, user }: { session: any; user: any }) {
   const router = useRouter()
   const [participants, setParticipants] = useState<any[]>([])
-  const [isJoining, setIsJoining] = useState(true)
+  const [isLoading, setIsLoading] = useState(true)
+  const [hasJoined, setHasJoined] = useState(false)
   const [inviteLink, setInviteLink] = useState("")
   const [isStarting, startTransition] = useTransition()
+  const [isLeaving, leaveTransition] = useTransition()
 
   const isHost = user.id === session.created_by
 
@@ -32,39 +117,20 @@ export function TogetherLobby({ session, user }: { session: any; user: any }) {
   useEffect(() => {
     const supabase = createClient()
 
-    const joinSession = async () => {
+    const checkParticipantStatus = async () => {
       const { data: existingParticipant } = await supabase
         .from("session_participants")
         .select("id")
         .eq("session_id", session.id)
         .eq("user_id", user.id)
         .single()
-
-      if (!existingParticipant) {
-        const playfulUsername = `${playfulAdjectives[Math.floor(Math.random() * playfulAdjectives.length)]} ${
-          playfulNouns[Math.floor(Math.random() * playfulNouns.length)]
-        }`
-        const { data: currentParticipants } = await supabase
-          .from("session_participants")
-          .select("color")
-          .eq("session_id", session.id)
-        const usedColors = currentParticipants?.map((p) => p.color) || []
-        const availableColors = userColors.filter((c) => !usedColors.includes(c))
-        const color =
-          availableColors.length > 0 ? availableColors[0] : userColors[Math.floor(Math.random() * userColors.length)]
-
-        const { error } = await supabase
-          .from("session_participants")
-          .insert({ session_id: session.id, user_id: user.id, playful_username: playfulUsername, color: color })
-
-        if (error) {
-          toast.error("Failed to join session", { description: error.message })
-        }
+      if (existingParticipant) {
+        setHasJoined(true)
       }
-      setIsJoining(false)
+      setIsLoading(false)
     }
 
-    joinSession()
+    checkParticipantStatus()
 
     const fetchParticipants = async () => {
       const { data } = await supabase.from("session_participants").select("*").eq("session_id", session.id)
@@ -88,7 +154,6 @@ export function TogetherLobby({ session, user }: { session: any; user: any }) {
         (payload) => {
           if (payload.new.status === "in_progress") {
             toast.success("Session starting! Let's go!")
-            // For now, redirect to the dashboard. The actual exercise page can be a next step.
             router.push("/dashboard/student")
           }
         },
@@ -112,20 +177,29 @@ export function TogetherLobby({ session, user }: { session: any; user: any }) {
     startTransition(async () => {
       try {
         await startTogetherSession(session.id)
-        // Realtime listener will handle navigation for all clients
       } catch (error: any) {
         toast.error("Failed to start session", { description: error.message })
       }
     })
   }
 
-  if (isJoining) {
+  const handleLeaveSession = () => {
+    leaveTransition(async () => {
+      await leaveTogetherSession(session.id)
+    })
+  }
+
+  if (isLoading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center text-center">
         <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
-        <h1 className="text-2xl font-bold">Joining Session...</h1>
+        <h1 className="text-2xl font-bold">Loading Session...</h1>
       </div>
     )
+  }
+
+  if (!hasJoined) {
+    return <JoinScreen sessionId={session.id} userId={user.id} onJoinSuccess={() => setHasJoined(true)} />
   }
 
   return (
@@ -179,6 +253,10 @@ export function TogetherLobby({ session, user }: { session: any; user: any }) {
               Waiting for the host to start the session...
             </div>
           )}
+          <Button variant="destructive" className="w-full" onClick={handleLeaveSession} disabled={isLeaving}>
+            <LogOut className="h-4 w-4 mr-2" />
+            {isLeaving ? "Leaving..." : "Leave Session"}
+          </Button>
         </CardContent>
       </Card>
     </div>

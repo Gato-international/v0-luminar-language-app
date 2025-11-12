@@ -84,3 +84,24 @@ export async function startTogetherSession(sessionId: string) {
 
   if (updateError) throw new Error(`Failed to start session: ${updateError.message}`)
 }
+
+export async function leaveTogetherSession(sessionId: string) {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) throw new Error("Unauthorized")
+
+  const { error } = await supabase
+    .from("session_participants")
+    .delete()
+    .eq("session_id", sessionId)
+    .eq("user_id", user.id)
+
+  if (error) {
+    // Don't throw, just log it, so the redirect still happens
+    console.error("Error leaving session:", error.message)
+  }
+
+  redirect("/dashboard/student")
+}

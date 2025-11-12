@@ -4,14 +4,16 @@ import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Music, X, ChevronDown, ChevronUp, RotateCcw } from "lucide-react"
+import { Music, X, ChevronDown, ChevronUp, RotateCcw, ExternalLink } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
+import Link from "next/link"
 
 export function SpotifyPlayer() {
   const [isOpen, setIsOpen] = useState(false)
   const [isCollapsed, setIsCollapsed] = useState(false)
   const defaultPlaylistUrl = "https://open.spotify.com/embed/playlist/6Q6ymtrtuHGqaGNrXewvW1"
+  const fullPlaylistUrl = "https://open.spotify.com/playlist/6Q6ymtrtuHGqaGNrXewvW1"
   const [embedUrl, setEmbedUrl] = useState(defaultPlaylistUrl)
   const [searchQuery, setSearchQuery] = useState("")
 
@@ -72,10 +74,18 @@ export function SpotifyPlayer() {
               Search
             </Button>
           </div>
-          <Button variant="link" size="sm" className="text-xs h-auto p-0 text-muted-foreground" onClick={handleReset}>
-            <RotateCcw className="h-3 w-3 mr-1" />
-            Reset to default playlist
-          </Button>
+          <div className="flex items-center justify-between">
+            <Button variant="link" size="sm" className="text-xs h-auto p-0 text-muted-foreground" onClick={handleReset}>
+              <RotateCcw className="h-3 w-3 mr-1" />
+              Reset to default
+            </Button>
+            <Button variant="link" size="sm" asChild className="text-xs h-auto p-0 text-muted-foreground">
+              <Link href={fullPlaylistUrl} target="_blank" rel="noopener noreferrer">
+                View on Spotify
+                <ExternalLink className="h-3 w-3 ml-1" />
+              </Link>
+            </Button>
+          </div>
         </div>
         <iframe
           key={embedUrl}

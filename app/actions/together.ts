@@ -84,7 +84,9 @@ export async function startTogetherSession(sessionId: string) {
     .eq("id", sessionId)
 
   if (updateError) throw new Error(`Failed to start session: ${updateError.message}`)
-  // Revalidation is not needed as clients will update via realtime
+
+  // Redirect the host to the play page. Other clients will be redirected by the realtime listener.
+  redirect(`/together/${sessionId}/play`)
 }
 
 export async function nextAssignment(sessionId: string) {

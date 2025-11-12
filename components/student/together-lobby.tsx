@@ -175,11 +175,8 @@ export function TogetherLobby({ session, user }: { session: any; user: any }) {
 
   const handleStartSession = () => {
     startTransition(async () => {
-      try {
-        await startTogetherSession(session.id)
-      } catch (error: any) {
-        toast.error("Failed to start session", { description: error.message })
-      }
+      // Server action will handle errors and redirect
+      await startTogetherSession(session.id)
     })
   }
 

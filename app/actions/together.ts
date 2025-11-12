@@ -3,7 +3,6 @@
 import { createClient } from "@/lib/supabase/server"
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
-import { createClient as createAdminClient } from "@supabase/supabase-js"
 
 // Helper function to shuffle an array
 function shuffleArray<T>(array: T[]): T[] {
@@ -86,19 +85,7 @@ export async function startTogetherSession(sessionId: string) {
 
   if (updateError) throw new Error(`Failed to start session: ${updateError.message}`)
 
-  // Broadcast the start event to all clients in the lobby
-  const supabaseAdmin = createAdminClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-  )
-  const channel = supabaseAdmin.channel(`together-session-lobby-${sessionId}`)
-  await channel.send({
-    type: "broadcast",
-    event: "SESSION_START",
-  })
-  supabaseAdmin.removeChannel(channel)
-
-  // Redirect the host to the play page. Other clients will be redirected by the broadcast event.
+  // Redirect the host to the play page. Other clients will be redirected by the realtime listener.
   redirect(`/together/${sessionId}/play`)
 }
 

@@ -52,6 +52,18 @@
   }
 }
 
+@keyframes music-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    color: oklch(var(--muted-foreground));
+  }
+  50% {
+    transform: scale(1.25);
+    color: oklch(var(--primary));
+  }
+}
+
 :root {
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
@@ -192,6 +204,9 @@
   }
   .animate-pulse-glow {
     animation: pulse-glow 2.5s infinite;
+  }
+  .animate-music-pulse {
+    animation: music-pulse 2s infinite ease-in-out;
   }
   .custom-checkbox {
     appearance: none;

@@ -46,7 +46,7 @@ export function SpotifyPlayer() {
     <Card className="fixed bottom-6 right-6 z-50 w-80 shadow-2xl animate-in fade-in-50 slide-in-from-bottom-10 duration-300">
       <CardHeader className="flex flex-row items-center justify-between py-3 px-4">
         <CardTitle className="text-base flex items-center gap-2">
-          <Music className={cn("h-4 w-4", isCollapsed && "animate-pulse")} />
+          <Music className={cn("h-4 w-4", isCollapsed && "animate-music-pulse")} />
           Spotify Player
         </CardTitle>
         <div className="flex items-center gap-1">

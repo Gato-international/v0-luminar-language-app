@@ -17,7 +17,16 @@ export default async function DashboardLayout({ children }: { children: React.Re
   }
 
   const headersList = headers()
-  const platformStatus = headersList.get("X-Platform-Status")
+  let platformStatus = null
+
+  // The headers() object in some environments might not have a .get() method.
+  // This provides a fallback to access the header as a plain object property.
+  if (typeof headersList.get === "function") {
+    platformStatus = headersList.get("x-platform-status")
+  } else {
+    // Header names are typically lowercased when accessed this way.
+    platformStatus = (headersList as any)["x-platform-status"]
+  }
 
   return (
     <>

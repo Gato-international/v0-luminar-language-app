@@ -65,8 +65,8 @@ export async function middleware(request: NextRequest) {
     } else if (status === "test") {
       // If in test mode, add a header to the request to be read by the layout.
       const requestHeaders = new Headers(request.headers)
-      requestHeaders.set("X-Platform-Status", "test")
-      
+      requestHeaders.set("x-platform-status", "test")
+
       // Create a new response to apply the new headers
       const testModeResponse = NextResponse.next({
         request: {
@@ -80,7 +80,6 @@ export async function middleware(request: NextRequest) {
       })
 
       return testModeResponse
-
     } else {
       // If not in maintenance/test, but user is on the maintenance page, redirect them away.
       if (pathname === "/maintenance") {

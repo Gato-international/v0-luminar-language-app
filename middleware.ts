@@ -67,13 +67,22 @@ export async function middleware(request: NextRequest) {
     } else if (status === "test") {
       const requestHeaders = new Headers(request.headers)
       requestHeaders.set("x-platform-status", "test")
-      // Re-use the existing response object to add headers.
-      return NextResponse.next({
+
+      // Create a new response to apply the new headers
+      const testModeResponse = NextResponse.next({
         request: {
           headers: requestHeaders,
         },
       })
+
+      // IMPORTANT: Copy cookies from the original session response to the new response
+      response.cookies.getAll().forEach((cookie) => {
+        testModeResponse.cookies.set(cookie)
+      })
+
+      return testModeResponse
     } else {
+      // status is 'live'
       if (pathname === "/maintenance") {
         return createRedirect("/dashboard")
       }

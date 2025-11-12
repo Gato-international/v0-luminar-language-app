@@ -8,7 +8,6 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge"
 import { format, subDays, eachDayOfInterval, startOfDay } from "date-fns"
 import { ActivityChart } from "@/components/developer/activity-chart"
-import { SpotifyPlayer } from "@/components/developer/spotify-player"
 
 export default async function DeveloperDashboardPage() {
   const supabase = await createClient()
@@ -320,7 +319,6 @@ export default async function DeveloperDashboardPage() {
           </Link>
         </div>
       </div>
-      <SpotifyPlayer />
     </div>
   )
 }

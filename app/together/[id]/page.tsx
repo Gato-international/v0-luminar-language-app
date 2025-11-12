@@ -3,10 +3,11 @@ import { redirect } from "next/navigation"
 import { TogetherLobby } from "@/components/student/together-lobby"
 
 interface TogetherSessionPageProps {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }
 
 export default async function TogetherSessionPage({ params }: TogetherSessionPageProps) {
+  const { id } = await params
   const supabase = await createClient()
   const {
     data: { user },
@@ -19,7 +20,7 @@ export default async function TogetherSessionPage({ params }: TogetherSessionPag
   const { data: session, error } = await supabase
     .from("together_sessions")
     .select("*")
-    .eq("id", params.id)
+    .eq("id", id)
     .single()
 
   if (error || !session) {

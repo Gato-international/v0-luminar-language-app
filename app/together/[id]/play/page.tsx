@@ -20,15 +20,19 @@ export default async function TogetherPlayPage({ params }: TogetherPlayPageProps
   // Fetch all session data in parallel
   const [sessionResult, participantsResult, assignmentsResult] = await Promise.all([
     supabase.from("together_sessions").select("*").eq("id", id).single(),
-    supabase.from("session_participants").select("*, profiles(full_name)").eq("session_id", id),
+    supabase.from("session_participants").select("*").eq("session_id", id),
     supabase.from("session_assignments").select("*").eq("session_id", id).order("order"),
   ])
 
   const { data: session, error: sessionError } = sessionResult
   if (sessionError || !session) redirect("/dashboard/student/together")
 
-  const { data: participants } = participantsResult
-  const { data: assignments } = assignmentsResult
+  const { data: participants, error: participantsError } = participantsResult
+  const { data: assignments, error: assignmentsError } = assignmentsResult
+
+  if (participantsError || assignmentsError) {
+    throw new Error("Failed to load session data.")
+  }
 
   if (!participants || !assignments) throw new Error("Failed to load session data.")
 

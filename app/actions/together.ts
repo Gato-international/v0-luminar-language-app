@@ -58,3 +58,29 @@ export async function createTogetherSession() {
   // 5. Redirect to the new session lobby
   redirect(`/together/${session.id}`)
 }
+
+export async function startTogetherSession(sessionId: string) {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) throw new Error("Unauthorized")
+
+  // Verify the user is the host
+  const { data: session, error: sessionError } = await supabase
+    .from("together_sessions")
+    .select("created_by")
+    .eq("id", sessionId)
+    .single()
+
+  if (sessionError) throw new Error("Session not found.")
+  if (session.created_by !== user.id) throw new Error("Only the host can start the session.")
+
+  // Update the session status
+  const { error: updateError } = await supabase
+    .from("together_sessions")
+    .update({ status: "in_progress" })
+    .eq("id", sessionId)
+
+  if (updateError) throw new Error(`Failed to start session: ${updateError.message}`)
+}

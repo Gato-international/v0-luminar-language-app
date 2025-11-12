@@ -1,26 +1,31 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useTransition } from "react"
+import { useRouter } from "next/navigation"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Loader2, Copy } from "lucide-react"
+import { Loader2, Copy, Sparkles } from "lucide-react"
 import { toast } from "sonner"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
+import { startTogetherSession } from "@/app/actions/together"
 
 const playfulAdjectives = ["Quick", "Clever", "Wise", "Brave", "Happy", "Silent", "Swift", "Curious"]
 const playfulNouns = ["Fox", "Owl", "Lion", "Panda", "Eagle", "Tiger", "Dolphin", "Wolf"]
 const userColors = ["#3b82f6", "#22c55e", "#ef4444", "#eab308", "#8b5cf6", "#ec4899", "#f97316", "#14b8a6"]
 
 export function TogetherLobby({ session, user }: { session: any; user: any }) {
+  const router = useRouter()
   const [participants, setParticipants] = useState<any[]>([])
   const [isJoining, setIsJoining] = useState(true)
   const [inviteLink, setInviteLink] = useState("")
+  const [isStarting, startTransition] = useTransition()
+
+  const isHost = user.id === session.created_by
 
   useEffect(() => {
-    // Set invite link once window is available to avoid SSR issues
     setInviteLink(`${window.location.origin}/together/${session.id}`)
   }, [session.id])
 
@@ -28,7 +33,6 @@ export function TogetherLobby({ session, user }: { session: any; user: any }) {
     const supabase = createClient()
 
     const joinSession = async () => {
-      // Check if user is already a participant
       const { data: existingParticipant } = await supabase
         .from("session_participants")
         .select("id")
@@ -67,8 +71,8 @@ export function TogetherLobby({ session, user }: { session: any; user: any }) {
       setParticipants(data || [])
     }
 
-    const channel = supabase
-      .channel(`together-session-${session.id}`)
+    const participantsChannel = supabase
+      .channel(`together-session-participants-${session.id}`)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "session_participants", filter: `session_id=eq.${session.id}` },
@@ -76,17 +80,43 @@ export function TogetherLobby({ session, user }: { session: any; user: any }) {
       )
       .subscribe()
 
-    // Initial fetch
+    const sessionChannel = supabase
+      .channel(`together-session-status-${session.id}`)
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "together_sessions", filter: `id=eq.${session.id}` },
+        (payload) => {
+          if (payload.new.status === "in_progress") {
+            toast.success("Session starting! Let's go!")
+            // For now, redirect to the dashboard. The actual exercise page can be a next step.
+            router.push("/dashboard/student")
+          }
+        },
+      )
+      .subscribe()
+
     fetchParticipants()
 
     return () => {
-      supabase.removeChannel(channel)
+      supabase.removeChannel(participantsChannel)
+      supabase.removeChannel(sessionChannel)
     }
-  }, [session.id, user.id])
+  }, [session.id, user.id, router])
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(inviteLink)
     toast.success("Invite link copied to clipboard!")
+  }
+
+  const handleStartSession = () => {
+    startTransition(async () => {
+      try {
+        await startTogetherSession(session.id)
+        // Realtime listener will handle navigation for all clients
+      } catch (error: any) {
+        toast.error("Failed to start session", { description: error.message })
+      }
+    })
   }
 
   if (isJoining) {
@@ -129,9 +159,26 @@ export function TogetherLobby({ session, user }: { session: any; user: any }) {
               </Button>
             </div>
           </div>
-          <Button className="w-full" disabled={participants.length < 2}>
-            {participants.length < 2 ? "Waiting for more students..." : "Start Session"}
-          </Button>
+          {isHost ? (
+            <Button className="w-full" disabled={participants.length < 2 || isStarting} onClick={handleStartSession}>
+              {isStarting ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" /> Starting...
+                </>
+              ) : participants.length < 2 ? (
+                "Waiting for more students..."
+              ) : (
+                <>
+                  <Sparkles className="h-4 w-4 mr-2" />
+                  Start Session
+                </>
+              )}
+            </Button>
+          ) : (
+            <div className="text-center text-muted-foreground p-3 bg-muted rounded-md">
+              Waiting for the host to start the session...
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

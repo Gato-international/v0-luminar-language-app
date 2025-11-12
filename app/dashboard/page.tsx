@@ -20,7 +20,9 @@ export default async function DashboardPage() {
   }
 
   // Redirect based on role
-  if (profile.role === "teacher") {
+  if (profile.role === "developer") {
+    redirect("/dashboard/developer")
+  } else if (profile.role === "teacher") {
     redirect("/dashboard/teacher")
   } else {
     redirect("/dashboard/student")

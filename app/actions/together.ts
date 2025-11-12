@@ -77,7 +77,7 @@ export async function startTogetherSession(sessionId: string) {
   if (sessionError) throw new Error("Session not found.")
   if (session.created_by !== user.id) throw new Error("Only the host can start the session.")
 
-  // Update the session status
+  // Update the session status. The client-side listener will handle the redirect for everyone.
   const { error: updateError } = await supabase
     .from("together_sessions")
     .update({ status: "in_progress", current_assignment_index: 1 })
@@ -85,8 +85,7 @@ export async function startTogetherSession(sessionId: string) {
 
   if (updateError) throw new Error(`Failed to start session: ${updateError.message}`)
 
-  // Redirect the host to the play page. Other clients will be redirected by the realtime listener.
-  redirect(`/together/${sessionId}/play`)
+  // No redirect here. Let the real-time event handle it for all clients.
 }
 
 export async function nextAssignment(sessionId: string) {

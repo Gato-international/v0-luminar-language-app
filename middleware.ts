@@ -48,6 +48,10 @@ export async function middleware(request: NextRequest) {
 
   // Developers are immune to maintenance mode
   if (role === "developer") {
+    // If a developer somehow lands on the maintenance page, redirect them away
+    if (pathname === "/maintenance") {
+      return NextResponse.redirect(new URL("/dashboard", request.url))
+    }
     return response
   }
 
@@ -57,8 +61,15 @@ export async function middleware(request: NextRequest) {
     const status = platformStatus?.status || "live"
 
     if (status === "maintenance") {
-      // Redirect to maintenance page if not already there
-      return NextResponse.redirect(new URL("/maintenance", request.url))
+      // If in maintenance, redirect to the maintenance page if not already there.
+      if (pathname !== "/maintenance") {
+        return NextResponse.redirect(new URL("/maintenance", request.url))
+      }
+    } else {
+      // If not in maintenance, but user is on the maintenance page, redirect them away.
+      if (pathname === "/maintenance") {
+        return NextResponse.redirect(new URL("/dashboard", request.url))
+      }
     }
   }
 

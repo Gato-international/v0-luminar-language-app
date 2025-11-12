@@ -75,7 +75,7 @@
 }
 
 @theme inline {
-  --font-sans: "Inter", sans-serif;
+  --font-sans: "Geist", "Geist Fallback";
   --font-mono: "Geist Mono", "Geist Mono Fallback";
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -114,6 +114,26 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+
+  animation: {
+    element: "fadeSlideIn 0.8s ease-out forwards",
+    "slide-right": "slideRightIn 1s ease-out forwards",
+    testimonial: "testimonialIn 0.8s ease-out forwards",
+  },
+  keyframes: {
+    fadeSlideIn: {
+      from: { opacity: "0", filter: "blur(5px)", transform: "translateY(20px)" },
+      to: { opacity: "1", filter: "blur(0px)", transform: "translateY(0px)" },
+    },
+    slideRightIn: {
+      from: { opacity: "0", filter: "blur(10px)", transform: "translateX(-50px)" },
+      to: { opacity: "1", filter: "blur(0px)", transform: "translateX(0px)" },
+    },
+    testimonialIn: {
+      from: { opacity: "0", filter: "blur(5px)", transform: "translateY(30px) scale(0.95)" },
+      to: { opacity: "1", filter: "blur(0px)", transform: "translateY(0px) scale(1)" },
+    },
+  }
 }
 
 @layer base {
@@ -122,5 +142,48 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+  .animate-element {
+    opacity: 0;
+    filter: blur(5px);
+    transform: translateY(20px);
+    animation: fadeSlideIn 0.8s ease-out forwards;
+  }
+  .animate-slide-right {
+    opacity: 0;
+    filter: blur(10px);
+    transform: translateX(-50px);
+    animation: slideRightIn 1s ease-out forwards;
+  }
+  .animate-testimonial {
+    opacity: 0;
+    filter: blur(5px);
+    transform: translateY(30px) scale(0.95);
+    animation: testimonialIn 0.8s ease-out forwards;
+  }
+  .custom-checkbox {
+    appearance: none;
+    width: 1.15rem;
+    height: 1.15rem;
+    border: 1px solid oklch(var(--border));
+    border-radius: 0.375rem;
+    transition: all 0.2s;
+    cursor: pointer;
+    position: relative;
+    background-color: transparent;
+  }
+  .custom-checkbox:checked {
+    background-color: oklch(var(--primary));
+    border-color: oklch(var(--primary));
+  }
+  .custom-checkbox:checked::after {
+    content: "✓";
+    color: oklch(var(--primary-foreground));
+    position: absolute;
+    top: 45%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 0.8rem;
+    font-weight: bold;
   }
 }

@@ -1,119 +1,82 @@
 "use client"
 
 import type React from "react"
-
-import { createClient } from "@/lib/supabase/client"
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { useState, useEffect } from "react"
-import { Brain } from "lucide-react"
+import { createClient } from "@/lib/supabase/client"
+import { SignInPage, type Testimonial } from "@/components/ui/sign-in"
+import { toast } from "sonner"
 
-export default function LoginPage() {
-  const [email, setEmail] = useState("")
-  const [password, setPassword] = useState("")
-  const [error, setError] = useState<string | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
+const sampleTestimonials: Testimonial[] = [
+  {
+    avatarSrc: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=100&h=100&fit=crop&q=80",
+    name: "Alex Johnson",
+    handle: "@alexj",
+    text: "Luminar has completely changed how I approach learning grammar. It's intuitive and effective!",
+  },
+  {
+    avatarSrc: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop&q=80",
+    name: "Maria Garcia",
+    handle: "@mariag",
+    text: "The exercises are fantastic. I can finally see my progress and understand complex rules.",
+  },
+  {
+    avatarSrc: "https://images.unsplash.com/photo-1527980965255-d3b416303d12?w=100&h=100&fit=crop&q=80",
+    name: "Chen Wei",
+    handle: "@chenw",
+    text: "As a teacher, this platform is a dream. The AI feedback for students is incredibly insightful.",
+  },
+]
+
+export default function NewLoginPage() {
   const router = useRouter()
   const supabase = createClient()
 
-  useEffect(() => {
-    const checkUser = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
-      if (user) {
-        router.push("/dashboard")
-      }
-    }
-    checkUser()
-  }, [router, supabase])
+  const handleSignIn = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    const formData = new FormData(event.currentTarget)
+    const email = formData.get("email") as string
+    const password = formData.get("password") as string
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
-    setError(null)
+    const toastId = toast.loading("Signing in...")
 
-    try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      })
-      if (error) throw error
+    const { error } = await supabase.auth.signInWithPassword({ email, password })
+
+    if (error) {
+      toast.error("Sign In Failed", { id: toastId, description: error.message })
+    } else {
+      toast.success("Signed in successfully!", { id: toastId })
       router.push("/dashboard")
       router.refresh()
-    } catch (error: unknown) {
-      setError(error instanceof Error ? error.message : "An error occurred")
-    } finally {
-      setIsLoading(false)
     }
   }
 
+  const handleGoogleSignIn = () => {
+    toast.info("Google Sign-In is not yet implemented.")
+  }
+
+  const handleResetPassword = () => {
+    toast.info("Password reset functionality is not yet implemented.")
+  }
+
+  const handleCreateAccount = () => {
+    router.push("/auth/sign-up")
+  }
+
   return (
-    <div className="flex min-h-screen w-full items-center justify-center p-6 md:p-10 bg-gradient-to-b from-background to-muted/20">
-      <Card className="w-full max-w-4xl grid md:grid-cols-2 shadow-2xl overflow-hidden rounded-2xl p-0 gap-0">
-        {/* Left side: Login Form */}
-        <div className="p-6 sm:p-10 flex flex-col justify-center">
-          <div className="flex flex-col items-start gap-2 mb-8">
-            <div className="flex items-center gap-2">
-              <Brain className="h-8 w-8 text-primary" />
-              <span className="text-2xl font-bold">Luminar</span>
-            </div>
-            <p className="text-sm text-muted-foreground">Welcome back to your learning journey</p>
-          </div>
-
-          <h2 className="text-2xl font-bold">Sign In</h2>
-          <p className="text-sm text-muted-foreground mb-6">Enter your credentials to access your account</p>
-
-          <form onSubmit={handleLogin}>
-            <div className="flex flex-col gap-6">
-              <div className="grid gap-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="student@example.com"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                />
-              </div>
-              {error && <div className="text-sm text-destructive bg-destructive/10 p-3 rounded-md">{error}</div>}
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? "Signing in..." : "Sign In"}
-              </Button>
-            </div>
-            <div className="mt-4 text-center text-sm">
-              Don&apos;t have an account?{" "}
-              <Link href="/auth/sign-up" className="underline underline-offset-4 text-primary">
-                Sign up
-              </Link>
-            </div>
-          </form>
-        </div>
-
-        {/* Right side: Image */}
-        <div className="hidden md:block">
-          <img
-            src="/login-image.png"
-            alt="Abstract art representing language learning"
-            className="w-full h-full object-cover"
-          />
-        </div>
-      </Card>
+    <div className="bg-background text-foreground">
+      <SignInPage
+        title={
+          <>
+            Welcome back to <span className="text-primary">Luminar</span>
+          </>
+        }
+        heroImageSrc="https://images.unsplash.com/photo-1534349578988-9b6a744061b1?w=2160&q=80"
+        testimonials={sampleTestimonials}
+        onSignIn={handleSignIn}
+        onGoogleSignIn={handleGoogleSignIn}
+        onResetPassword={handleResetPassword}
+        onCreateAccount={handleCreateAccount}
+      />
     </div>
   )
 }

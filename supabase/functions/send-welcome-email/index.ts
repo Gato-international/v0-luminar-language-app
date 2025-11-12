@@ -18,25 +18,27 @@ serve(async (req: Request) => {
     }
 
     const { record } = await req.json()
-    const { email, raw_user_meta_data } = record
+    const { email, raw_user_meta_data, confirmation_token } = record
     const fullName = raw_user_meta_data?.full_name || "New User"
 
     const resend = new Resend(resendApiKey)
 
+    // Note: You must verify your domain in Resend to send from a custom domain.
+    // Using their default domain for now.
     const { error } = await resend.emails.send({
-      from: "Luminar <welcome@luminar.app>", // IMPORTANT: You must verify this domain in Resend.
+      from: "Luminar <onboarding@resend.dev>",
       to: [email],
       subject: "Welcome to Luminar!",
       html: `
         <div style="font-family: sans-serif; line-height: 1.6;">
           <h1 style="color: #333;">Welcome to Luminar, ${fullName}!</h1>
           <p>We're thrilled to have you on board. Get ready to master grammar and expand your vocabulary like never before.</p>
-          <p>You can log in to your dashboard and start learning right away:</p>
+          <p>Click the button below to confirm your email address and start your learning journey:</p>
           <a 
-            href="https://jodxcwqikzjoqkekqqgg.supabase.co/auth/v1/verify?token=${record.confirmation_token}&type=signup&redirect_to=/dashboard" 
+            href="https://jodxcwqikzjoqkekqqgg.supabase.co/auth/v1/verify?token=${confirmation_token}&type=signup&redirect_to=/dashboard" 
             style="display: inline-block; padding: 12px 24px; background-color: #000; color: #fff; text-decoration: none; border-radius: 8px;"
           >
-            Go to Dashboard
+            Confirm Your Email & Go to Dashboard
           </a>
           <p>Happy learning!</p>
           <p><em>— The Luminar Team</em></p>

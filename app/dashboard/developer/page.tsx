@@ -1,7 +1,7 @@
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Users, Settings, Database, Code, Activity, Megaphone, FileText, Target, Package } from "lucide-react"
+import { Users, Settings, Database, Code, Activity, Megaphone, FileText, Target, Package, Mail } from "lucide-react"
 import Link from "next/link"
 import { UserNav } from "@/components/student/user-nav"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -300,6 +300,20 @@ export default async function DeveloperDashboardPage() {
                   <CardTitle>Content Database</CardTitle>
                 </div>
                 <CardDescription>Raw access to all chapters, sentences, and flashcards.</CardDescription>
+              </CardHeader>
+            </Card>
+          </Link>
+
+          <Link href="/dashboard/developer/emails">
+            <Card className="hover:shadow-lg transition-shadow h-full">
+              <CardHeader>
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="h-12 w-12 rounded-lg bg-red-500/10 flex items-center justify-center">
+                    <Mail className="h-6 w-6 text-red-500" />
+                  </div>
+                  <CardTitle>Email Management</CardTitle>
+                </div>
+                <CardDescription>Configure and manage automated emails.</CardDescription>
               </CardHeader>
             </Card>
           </Link>

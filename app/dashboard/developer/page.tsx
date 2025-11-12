@@ -1,8 +1,7 @@
 import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Users, Settings, Database, Code } from "lucide-react"
+import { Users, Settings, Database, Code, Activity } from "lucide-react"
 import Link from "next/link"
 import { UserNav } from "@/components/student/user-nav"
 
@@ -59,15 +58,29 @@ export default async function DeveloperDashboardPage() {
             </Card>
           </Link>
 
+          <Link href="/dashboard/developer/student-data">
+            <Card className="hover:shadow-lg transition-shadow h-full">
+              <CardHeader>
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="h-12 w-12 rounded-lg bg-orange-500/10 flex items-center justify-center">
+                    <Activity className="h-6 w-6 text-orange-500" />
+                  </div>
+                  <CardTitle>Student Data</CardTitle>
+                </div>
+                <CardDescription>Monitor exercises, attempts, and AI feedback logs.</CardDescription>
+              </CardHeader>
+            </Card>
+          </Link>
+
           <Card className="opacity-50 cursor-not-allowed">
             <CardHeader>
               <div className="flex items-center gap-3 mb-2">
                 <div className="h-12 w-12 rounded-lg bg-green-500/10 flex items-center justify-center">
                   <Database className="h-6 w-6 text-green-500" />
                 </div>
-                <CardTitle>Content Overview</CardTitle>
+                <CardTitle>Content Database</CardTitle>
               </div>
-              <CardDescription>View all chapters, sentences, and flashcards. (Coming Soon)</CardDescription>
+              <CardDescription>Raw access to all chapters, sentences, and flashcards. (Coming Soon)</CardDescription>
             </CardHeader>
           </Card>
 

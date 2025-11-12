@@ -15,10 +15,10 @@ export default async function PlatformStatusPage() {
   const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single()
   if (!profile || profile.role !== "developer") redirect("/dashboard")
 
-  const { data: statuses } = await supabase.from("platform_status").select("role, status")
+  const { data: statuses } = await supabase.from("platform_status").select("role, status, maintenance_message")
 
-  const studentStatus = statuses?.find((s) => s.role === "student")?.status || "live"
-  const teacherStatus = statuses?.find((s) => s.role === "teacher")?.status || "live"
+  const studentStatus = statuses?.find((s) => s.role === "student")
+  const teacherStatus = statuses?.find((s) => s.role === "teacher")
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
@@ -38,8 +38,16 @@ export default async function PlatformStatusPage() {
       </header>
 
       <div className="container mx-auto px-4 py-8 space-y-6">
-        <PlatformStatusControls role="student" initialStatus={studentStatus} />
-        <PlatformStatusControls role="teacher" initialStatus={teacherStatus} />
+        <PlatformStatusControls
+          role="student"
+          initialStatus={studentStatus?.status || "live"}
+          initialMaintenanceMessage={studentStatus?.maintenance_message}
+        />
+        <PlatformStatusControls
+          role="teacher"
+          initialStatus={teacherStatus?.status || "live"}
+          initialMaintenanceMessage={teacherStatus?.maintenance_message}
+        />
       </div>
     </div>
   )

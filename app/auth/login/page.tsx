@@ -70,7 +70,7 @@ export default function NewLoginPage() {
             Welcome back to <span className="text-primary">Luminar</span>
           </>
         }
-        heroImageSrc="https://images.unsplash.com/photo-1534349578988-9b6a744061b1?w=2160&q=80"
+        heroImageSrc="/signin-hero.jpg"
         testimonials={sampleTestimonials}
         onSignIn={handleSignIn}
         onGoogleSignIn={handleGoogleSignIn}

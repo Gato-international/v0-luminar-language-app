@@ -3,8 +3,8 @@ import { NextResponse, type NextRequest } from "next/server"
 import { updateSession } from "@/lib/supabase/middleware"
 
 export async function middleware(request: NextRequest) {
-  // updateSession handles session refresh and returns a response object.
-  const response = await updateSession(request)
+  // updateSession handles session refresh and returns a response object with cookies.
+  let response = await updateSession(request)
   const { pathname } = request.nextUrl
 
   // Define public/unprotected routes that should always be accessible
@@ -19,13 +19,11 @@ export async function middleware(request: NextRequest) {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        get(name: string) {
-          return request.cookies.get(name)?.value
-        },
-        set(name: string, value: string, options: CookieOptions) {
+        get: (name: string) => request.cookies.get(name)?.value,
+        set: (name: string, value: string, options: CookieOptions) => {
           // The updateSession function already handles setting cookies on the response
         },
-        remove(name: string, options: CookieOptions) {
+        remove: (name: string, options: CookieOptions) => {
           // The updateSession function already handles removing cookies on the response
         },
       },
@@ -46,9 +44,8 @@ export async function middleware(request: NextRequest) {
   const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single()
   const role = profile?.role
 
-  // Developers are immune to maintenance mode
+  // Developers are immune to maintenance/test mode
   if (role === "developer") {
-    // If a developer somehow lands on the maintenance page, redirect them away
     if (pathname === "/maintenance") {
       return NextResponse.redirect(new URL("/dashboard", request.url))
     }
@@ -65,8 +62,27 @@ export async function middleware(request: NextRequest) {
       if (pathname !== "/maintenance") {
         return NextResponse.redirect(new URL("/maintenance", request.url))
       }
+    } else if (status === "test") {
+      // If in test mode, add a header to the request to be read by the layout.
+      const requestHeaders = new Headers(request.headers)
+      requestHeaders.set("X-Platform-Status", "test")
+      
+      // Create a new response to apply the new headers
+      const testModeResponse = NextResponse.next({
+        request: {
+          headers: requestHeaders,
+        },
+      })
+
+      // Copy cookies from the original session response to the new response
+      response.cookies.getAll().forEach((cookie) => {
+        testModeResponse.cookies.set(cookie)
+      })
+
+      return testModeResponse
+
     } else {
-      // If not in maintenance, but user is on the maintenance page, redirect them away.
+      // If not in maintenance/test, but user is on the maintenance page, redirect them away.
       if (pathname === "/maintenance") {
         return NextResponse.redirect(new URL("/dashboard", request.url))
       }

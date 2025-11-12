@@ -6,7 +6,8 @@ import Link from "next/link"
 import { UserNav } from "@/components/student/user-nav"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
-import { format } from "date-fns"
+import { format, subDays, eachDayOfInterval, startOfDay } from "date-fns"
+import { ActivityChart } from "@/components/developer/activity-chart"
 
 export default async function DeveloperDashboardPage() {
   const supabase = await createClient()
@@ -35,6 +36,7 @@ export default async function DeveloperDashboardPage() {
     { count: flashcardSetsCount },
     { data: allUsers },
     { data: recentExercises },
+    { data: recentCompletedExercises },
   ] = await Promise.all([
     supabase.from("profiles").select("*", { count: "exact", head: true }),
     supabase.from("exercises").select("*", { count: "exact", head: true }).eq("status", "completed"),
@@ -48,6 +50,11 @@ export default async function DeveloperDashboardPage() {
       .select("id, created_at, profiles(full_name), chapters(title)")
       .order("created_at", { ascending: false })
       .limit(5),
+    supabase
+      .from("exercises")
+      .select("completed_at")
+      .eq("status", "completed")
+      .gte("completed_at", subDays(new Date(), 30).toISOString()),
   ])
 
   // Calculate overall accuracy
@@ -64,6 +71,28 @@ export default async function DeveloperDashboardPage() {
   }
 
   const recentUsers = allUsers?.slice(0, 5)
+
+  // Process data for activity chart
+  const activityData = eachDayOfInterval({
+    start: subDays(new Date(), 29),
+    end: new Date(),
+  }).map((day) => ({
+    date: format(day, "yyyy-MM-dd"),
+    count: 0,
+  }))
+
+  const activityMap = new Map(activityData.map((d) => [d.date, d.count]))
+
+  recentCompletedExercises?.forEach((exercise) => {
+    if (exercise.completed_at) {
+      const date = format(startOfDay(new Date(exercise.completed_at)), "yyyy-MM-dd")
+      if (activityMap.has(date)) {
+        activityMap.set(date, (activityMap.get(date) || 0) + 1)
+      }
+    }
+  })
+
+  const chartData = Array.from(activityMap, ([date, count]) => ({ date, count }))
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
@@ -132,6 +161,11 @@ export default async function DeveloperDashboardPage() {
               </div>
             </CardContent>
           </Card>
+        </div>
+
+        {/* Activity Chart */}
+        <div className="mb-8">
+          <ActivityChart data={chartData} />
         </div>
 
         <div className="grid lg:grid-cols-3 gap-8 mb-8">

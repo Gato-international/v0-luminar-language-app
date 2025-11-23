@@ -1,6 +1,4 @@
 term,definition,stem,group_name,gender_name,example_sentence
-"de man","the man;man","man","1","m","De man loopt op straat."
-"het boek","the book;book","boek","2","o","Ik lees het boek."
-"de vrouw","the woman;woman","vrouw","1","v","De vrouw fietst naar haar werk."
-"de tafel","the table;table","tafel","3","v","De kat zit op de tafel."
-"het huis","the house;house","huis","2","o","Het huis is groot."
+"de auto","the car","auto","1","m","De auto is rood."
+"het huis","the house","huis","2","o","Het huis is groot."
+"de vrouw","the woman","vrouw","1","v","De vrouw loopt op straat."

@@ -1,54 +1,74 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr"
 import { NextResponse, type NextRequest } from "next/server"
-import { updateSession } from "@/lib/supabase/middleware"
 
 export async function middleware(request: NextRequest) {
-  // This response object now carries the session cookies.
-  let response = await updateSession(request)
-  const { pathname } = request.nextUrl
+  // Maak een response-object aan dat we kunnen aanpassen en retourneren.
+  let response = NextResponse.next({
+    request: {
+      headers: request.headers,
+    },
+  })
 
-  // Helper to create redirects while preserving session cookies.
-  const createRedirect = (url: string) => {
-    const redirectResponse = NextResponse.redirect(new URL(url, request.url))
-    response.cookies.getAll().forEach((cookie) => {
-      redirectResponse.cookies.set(cookie)
-    })
-    return redirectResponse
-  }
-
-  const publicRoutes = ["/auth/login", "/auth/sign-up", "/auth/sign-up-success", "/maintenance"]
-  if (publicRoutes.includes(pathname) || pathname.startsWith("/api/")) {
-    return response
-  }
-
+  // Maak een Supabase-client die cookies kan lezen en schrijven.
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        get: (name: string) => request.cookies.get(name)?.value,
-        set: (name: string, value: string, options: CookieOptions) => {
+        get(name: string) {
+          return request.cookies.get(name)?.value
+        },
+        set(name: string, value: string, options: CookieOptions) {
+          // De 'set'-methode wordt aangeroepen wanneer de Supabase-client een cookie moet opslaan.
+          // We passen het response-object aan om de cookie in te stellen.
           response.cookies.set({ name, value, ...options })
         },
-        remove: (name: string, options: CookieOptions) => {
+        remove(name: string, options: CookieOptions) {
+          // De 'remove'-methode wordt aangeroepen wanneer de Supabase-client een cookie moet verwijderen.
+          // We passen het response-object aan om de cookie te verwijderen.
           response.cookies.set({ name, value: "", ...options })
         },
       },
     },
   )
 
+  // Dit zal de sessie vernieuwen als deze is verlopen.
+  // Het maakt ook gebruikersgegevens beschikbaar voor de rest van de middleware.
   const {
     data: { user },
   } = await supabase.auth.getUser()
 
+  const { pathname } = request.nextUrl
+
+  // Helper om redirects te maken met behoud van sessiecookies.
+  const createRedirect = (url: string) => {
+    const redirectResponse = NextResponse.redirect(new URL(url, request.url))
+    // Kopieer alle cookies van onze werkresponse naar de redirect-response.
+    response.cookies.getAll().forEach((cookie) => {
+      redirectResponse.cookies.set(cookie)
+    })
+    return redirectResponse
+  }
+
+  // --- ROUTEBEVEILIGINGSLOGICA ---
+
+  const publicRoutes = ["/auth/login", "/auth/sign-up", "/auth/sign-up-success", "/maintenance"]
+  if (publicRoutes.includes(pathname) || pathname.startsWith("/api/")) {
+    return response // Beveilig geen openbare routes.
+  }
+
+  // Als er geen gebruiker is, stuur door naar de inlogpagina, behalve voor de hoofdpagina.
   if (!user) {
-    if (pathname === "/") return response
+    if (pathname === "/") return response // Toegang tot de startpagina toestaan
     return createRedirect("/auth/login")
   }
+
+  // --- ROLGEBASEERDE LOGICA & ONDERHOUDSMODUS ---
 
   const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single()
   const role = profile?.role
 
+  // Developers zijn immuun voor de onderhoudsmodus.
   if (role === "developer") {
     if (pathname === "/maintenance") {
       return createRedirect("/dashboard")
@@ -56,6 +76,7 @@ export async function middleware(request: NextRequest) {
     return response
   }
 
+  // Controleer de status voor studenten en docenten.
   if (role === "student" || role === "teacher") {
     const { data: platformStatus } = await supabase.from("platform_status").select("status").eq("role", role).single()
     const status = platformStatus?.status || "live"
@@ -65,22 +86,11 @@ export async function middleware(request: NextRequest) {
         return createRedirect("/maintenance")
       }
     } else if (status === "test") {
-      const requestHeaders = new Headers(request.headers)
-      requestHeaders.set("x-platform-status", "test")
-
-      // Create a new response to apply the new headers
-      const testModeResponse = NextResponse.next({
-        request: {
-          headers: requestHeaders,
-        },
-      })
-
-      // IMPORTANT: Copy cookies from the original session response to the new response
-      response.cookies.getAll().forEach((cookie) => {
-        testModeResponse.cookies.set(cookie)
-      })
-
-      return testModeResponse
+      // Voeg een header toe voor de testmodus.
+      response.headers.set("x-platform-status", "test")
+      if (pathname === "/maintenance") {
+        return createRedirect("/dashboard")
+      }
     } else {
       // status is 'live'
       if (pathname === "/maintenance") {
@@ -89,6 +99,7 @@ export async function middleware(request: NextRequest) {
     }
   }
 
+  // Als we tot hier zijn gekomen, retourneer de response met bijgewerkte cookies.
   return response
 }
 

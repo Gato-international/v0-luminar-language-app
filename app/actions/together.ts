@@ -3,6 +3,7 @@
 import { createClient } from "@/lib/supabase/server"
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
+import type { Sentence, Flashcard } from "@/lib/types"
 
 // Helper function to shuffle an array
 function shuffleArray<T>(array: T[]): T[] {
@@ -36,12 +37,12 @@ export async function createTogetherSession() {
   if (!sentences || !flashcards) throw new Error("Could not fetch assignments.")
 
   // 3. Create assignment list
-  const sentenceAssignments = sentences.map((s) => ({
+  const sentenceAssignments = (sentences as Sentence[]).map((s: Sentence) => ({
     session_id: session.id,
     assignment_type: "sentence",
     source_id: s.id,
   }))
-  const flashcardAssignments = flashcards.map((f) => ({
+  const flashcardAssignments = (flashcards as Flashcard[]).map((f: Flashcard) => ({
     session_id: session.id,
     assignment_type: "flashcard",
     source_id: f.id,
@@ -117,7 +118,7 @@ export async function nextAssignment(sessionId: string) {
     // End of session
     const { error: updateError } = await supabase
       .from("together_sessions")
-      .update({ status: "completed", completed_at: new Date().toISOString() })
+      .update({ status: "completed" })
       .eq("id", sessionId)
     if (updateError) throw new Error(updateError.message)
   } else {

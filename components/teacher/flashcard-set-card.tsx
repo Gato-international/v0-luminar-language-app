@@ -20,9 +20,10 @@ interface FlashcardSetCardProps {
     flashcards: { count: number }[]
   }
   chapters: Chapter[]
+  basePath: string
 }
 
-export function FlashcardSetCard({ set, chapters }: FlashcardSetCardProps) {
+export function FlashcardSetCard({ set, chapters, basePath }: FlashcardSetCardProps) {
   const router = useRouter()
   const flashcardCount = set.flashcards[0]?.count || 0
 
@@ -31,7 +32,7 @@ export function FlashcardSetCard({ set, chapters }: FlashcardSetCardProps) {
     if ((e.target as HTMLElement).closest("button")) {
       return
     }
-    router.push(`/dashboard/teacher/content/flashcards/${set.id}`)
+    router.push(`${basePath}/content/flashcards/${set.id}`)
   }
 
   return (

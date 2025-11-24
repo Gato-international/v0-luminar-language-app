@@ -63,7 +63,7 @@ export default async function FlashcardsPage() {
         {flashcardSets && flashcardSets.length > 0 ? (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
             {flashcardSets.map((set) => (
-              <FlashcardSetCard key={set.id} set={set} chapters={chapters || []} />
+              <FlashcardSetCard key={set.id} set={set} chapters={chapters || []} basePath="/dashboard/teacher" />
             ))}
           </div>
         ) : (

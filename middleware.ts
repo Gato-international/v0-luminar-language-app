@@ -1,39 +1,36 @@
-import { createServerClient, type CookieOptions } from "@supabase/ssr"
+import { createServerClient } from "@supabase/ssr"
 import { NextResponse, type NextRequest } from "next/server"
 
 export async function middleware(request: NextRequest) {
-  // Maak een response-object aan dat we kunnen aanpassen en retourneren.
   let response = NextResponse.next({
     request: {
       headers: request.headers,
     },
   })
 
-  // Maak een Supabase-client die cookies kan lezen en schrijven.
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        get(name: string) {
-          return request.cookies.get(name)?.value
+        getAll() {
+          return request.cookies.getAll()
         },
-        set(name: string, value: string, options: CookieOptions) {
-          // De 'set'-methode wordt aangeroepen wanneer de Supabase-client een cookie moet opslaan.
-          // We passen het response-object aan om de cookie in te stellen.
-          response.cookies.set({ name, value, ...options })
-        },
-        remove(name: string, options: CookieOptions) {
-          // De 'remove'-methode wordt aangeroepen wanneer de Supabase-client een cookie moet verwijderen.
-          // We passen het response-object aan om de cookie te verwijderen.
-          response.cookies.set({ name, value: "", ...options })
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value, options }) => request.cookies.set(name, value))
+          response = NextResponse.next({
+            request: {
+              headers: request.headers,
+            },
+          })
+          cookiesToSet.forEach(({ name, value, options }) =>
+            response.cookies.set(name, value, options)
+          )
         },
       },
     },
   )
 
-  // Dit zal de sessie vernieuwen als deze is verlopen.
-  // Het maakt ook gebruikersgegevens beschikbaar voor de rest van de middleware.
   const {
     data: { user },
   } = await supabase.auth.getUser()
@@ -99,7 +96,6 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // Als we tot hier zijn gekomen, retourneer de response met bijgewerkte cookies.
   return response
 }
 

@@ -66,6 +66,7 @@ export function ExerciseInterface({
   const [exitCode, setExitCode] = useState("")
   const [exitCodeError, setExitCodeError] = useState<string | null>(null)
   const [isFocusLost, setIsFocusLost] = useState(false)
+  const [feedbackMode, setFeedbackMode] = useState(false)
 
   const isTestMode = exercise.exercise_type === "test" && enforceFocusMode
   const [testStarted, setTestStarted] = useState(!isTestMode)
@@ -170,17 +171,18 @@ export function ExerciseInterface({
     setSelectedWord(null)
   }
 
-  const handleNext = () => {
-    if (currentQuestionIndex < sentences.length - 1) {
-      setCurrentQuestionIndex(currentQuestionIndex + 1)
-      setSelectedWord(null)
-    }
+  const handleCheckAnswer = () => {
+    setFeedbackMode(true)
+    setSelectedWord(null)
   }
 
-  const handlePrevious = () => {
-    if (currentQuestionIndex > 0) {
-      setCurrentQuestionIndex(currentQuestionIndex - 1)
+  const handleContinue = () => {
+    if (currentQuestionIndex < sentences.length - 1) {
+      setCurrentQuestionIndex(currentQuestionIndex + 1)
+      setFeedbackMode(false)
       setSelectedWord(null)
+    } else {
+      handleSubmit()
     }
   }
 
@@ -390,11 +392,12 @@ export function ExerciseInterface({
               answers={currentSentenceAnswers}
               grammaticalCases={grammaticalCases}
               onWordClick={handleWordClick}
+              showFeedback={feedbackMode}
             />
           </CardContent>
         </Card>
 
-        {selectedWord && (
+        {selectedWord && !feedbackMode && (
           <Card className="mb-6">
             <CardHeader>
               <CardTitle className="text-lg">
@@ -407,40 +410,32 @@ export function ExerciseInterface({
           </Card>
         )}
 
-        <div className="flex items-center justify-between">
-          <Button variant="outline" onClick={handlePrevious} disabled={currentQuestionIndex === 0 || isSubmitting}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Previous
-          </Button>
-
-          <div className="flex items-center gap-2">
-            {isCurrentSentenceComplete && (
-              <Badge variant="default" className="bg-green-500">
-                <CheckCircle2 className="h-3 w-3 mr-1" />
-                Complete
-              </Badge>
-            )}
-          </div>
-
-          {currentQuestionIndex < sentences.length - 1 ? (
-            <Button onClick={handleNext} disabled={isSubmitting}>
-              Next
-              <ArrowRight className="h-4 w-4 ml-2" />
+        <div className="flex items-center justify-end">
+          {/* Action Button */}
+          {!feedbackMode ? (
+            <Button 
+                onClick={handleCheckAnswer} 
+                disabled={!isCurrentSentenceComplete || isSubmitting}
+                size="lg"
+            >
+              Check Answer
             </Button>
           ) : (
-            <Button onClick={handleSubmit} disabled={!isAllComplete || isSubmitting}>
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Submitting...
-                </>
-              ) : (
-                <>
-                  Submit Exercise
-                  <CheckCircle2 className="h-4 w-4 ml-2" />
-                </>
-              )}
-            </Button>
+             <Button 
+                onClick={handleContinue} 
+                disabled={isSubmitting}
+                size="lg"
+             >
+                {currentQuestionIndex < sentences.length - 1 ? (
+                    <>
+                    Continue <ArrowRight className="ml-2 h-4 w-4" />
+                    </>
+                ) : (
+                    <>
+                    Finish Exercise <CheckCircle2 className="ml-2 h-4 w-4" />
+                    </>
+                )}
+             </Button>
           )}
         </div>
       </div>

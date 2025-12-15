@@ -12,22 +12,29 @@ interface CasePerformanceItem {
 interface PracticeFeedbackProps {
   casePerformance: CasePerformanceItem[]
   accuracy: number
+  totalQuestions?: number
 }
 
-export function PracticeFeedback({ casePerformance, accuracy }: PracticeFeedbackProps) {
+export function PracticeFeedback({ casePerformance, accuracy, totalQuestions = 10 }: PracticeFeedbackProps) {
   const strugglingCases = casePerformance
     .filter((p) => p.total > 0 && p.accuracy < 75)
     .sort((a, b) => a.accuracy - b.accuracy)
     .slice(0, 2) // Focus on the top 2 struggling cases
 
+  // Calculate recommended time
+  const missedQuestions = Math.round(totalQuestions * (1 - accuracy / 100))
+  const baseTimePerMissed = 2 // 2 minutes per missed question
+  const minimumTime = 5
+  const maximumTime = 30
+  
+  let recommendedMinutes = Math.max(minimumTime, missedQuestions * baseTimePerMissed)
+  recommendedMinutes = Math.min(recommendedMinutes, maximumTime)
+
   const getPracticeTimeSuggestion = () => {
-    if (accuracy < 50) {
-      return "We recommend another 15-20 minute session on this chapter soon. Repetition is key!"
+    if (accuracy === 100) {
+        return "Perfect score! A quick 2-minute refresher tomorrow is all you need to keep this fresh."
     }
-    if (accuracy < 80) {
-      return "Great effort! A focused 10-minute review on the tricky cases below should solidify your understanding."
-    }
-    return "You're doing great! A quick 5-minute review will help you achieve mastery."
+    return `Based on your performance, we recommend dedicating about ${recommendedMinutes} minutes to practice this topic to master the concepts.`
   }
 
   const getGeneralSuggestions = () => {

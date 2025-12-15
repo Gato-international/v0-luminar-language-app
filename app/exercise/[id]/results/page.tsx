@@ -191,7 +191,11 @@ export default async function ResultsPage({ params }: ResultsPageProps) {
         {/* Personalized Feedback for Practice Mode */}
         {exercise.exercise_type === "practice" && casePerformance && (
           <div className="mt-8">
-            <PracticeFeedback casePerformance={casePerformance} accuracy={accuracy} />
+            <PracticeFeedback 
+                casePerformance={casePerformance} 
+                accuracy={accuracy} 
+                totalQuestions={totalAttempts}
+            />
           </div>
         )}
 

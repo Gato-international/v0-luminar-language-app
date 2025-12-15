@@ -3,7 +3,7 @@ import { redirect } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { ArrowLeft } from "lucide-react"
+import { ArrowLeft, Wand2 } from "lucide-react"
 import Link from "next/link"
 import { SentenceDialog } from "@/components/teacher/sentence-dialog"
 import { DeleteDialog } from "@/components/teacher/delete-dialog"
@@ -71,7 +71,15 @@ export default async function SentencesPage() {
               <h1 className="text-2xl font-bold">Sentences</h1>
               <p className="text-sm text-muted-foreground">Manage practice sentences and annotations</p>
             </div>
-            <SentenceDialog chapters={chapters || []} grammaticalCases={grammaticalCases || []} />
+            <div className="flex items-center gap-2">
+              <Button asChild variant="outline">
+                <Link href="/dashboard/teacher/content/sentences/scanner">
+                  <Wand2 className="mr-2 h-4 w-4" />
+                  MLC Scanner
+                </Link>
+              </Button>
+              <SentenceDialog chapters={chapters || []} grammaticalCases={grammaticalCases || []} />
+            </div>
           </div>
         </div>
       </header>

@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server"
+import { createClient as createAdminClient } from "@supabase/supabase-js"
 import { redirect } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { ArrowLeft } from "lucide-react"
@@ -16,8 +17,17 @@ export default async function PlatformStatusPage() {
   const { data: profile } = await supabase.from("profiles").select("role").eq("id", user.id).single()
   if (!profile || profile.role !== "developer") redirect("/dashboard")
 
-  const { data: statuses } = await supabase.from("platform_status").select("role, status, maintenance_message")
-  const { data: registrationSetting } = await supabase.from("platform_settings").select("value").eq("key", "registration_enabled").single()
+  const adminSupabase = createAdminClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  )
+
+  const { data: statuses } = await adminSupabase.from("platform_status").select("role, status, maintenance_message")
+  const { data: registrationSetting } = await adminSupabase
+    .from("platform_settings")
+    .select("value")
+    .eq("key", "registration_enabled")
+    .single()
 
   const studentStatus = statuses?.find((s) => s.role === "student")
   const teacherStatus = statuses?.find((s) => s.role === "teacher")

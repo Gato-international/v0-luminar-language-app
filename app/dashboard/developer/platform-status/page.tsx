@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button"
 import { ArrowLeft } from "lucide-react"
 import Link from "next/link"
 import { PlatformStatusControls } from "@/components/developer/platform-status-controls"
+import { RegistrationControl } from "@/components/developer/registration-control"
 
 export default async function PlatformStatusPage() {
   const supabase = await createClient()
@@ -16,9 +17,11 @@ export default async function PlatformStatusPage() {
   if (!profile || profile.role !== "developer") redirect("/dashboard")
 
   const { data: statuses } = await supabase.from("platform_status").select("role, status, maintenance_message")
+  const { data: registrationSetting } = await supabase.from("platform_settings").select("value").eq("key", "registration_enabled").single()
 
   const studentStatus = statuses?.find((s) => s.role === "student")
   const teacherStatus = statuses?.find((s) => s.role === "teacher")
+  const registrationEnabled = registrationSetting?.value ?? true // Default to true if not set
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-muted/20">
@@ -38,6 +41,8 @@ export default async function PlatformStatusPage() {
       </header>
 
       <div className="container mx-auto px-4 py-8 space-y-6">
+        <RegistrationControl initialEnabled={registrationEnabled} />
+        
         <PlatformStatusControls
           role="student"
           initialStatus={studentStatus?.status || "live"}

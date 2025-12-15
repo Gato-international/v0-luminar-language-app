@@ -19,7 +19,7 @@ export default async function SettingsPage() {
 
   const { data: profile } = await supabase.from("profiles").select("*").eq("id", user.id).single()
 
-  if (!profile || profile.role !== "teacher") {
+  if (!profile || (profile.role !== "teacher" && profile.role !== "developer")) {
     redirect("/auth/login")
   }
 
@@ -37,9 +37,9 @@ export default async function SettingsPage() {
       <header className="border-b bg-card/50 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-4">
           <Button asChild variant="ghost" className="mb-2">
-            <Link href="/dashboard/teacher">
+            <Link href={profile.role === "developer" ? "/dashboard/developer" : "/dashboard/teacher"}>
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Dashboard
+              {profile.role === "developer" ? "Back to Developer Dashboard" : "Back to Dashboard"}
             </Link>
           </Button>
           <h1 className="text-2xl font-bold">Settings</h1>
